@@ -1,9 +1,7 @@
 from typing import Any, Dict, Optional
 
 from ConfigSpace.configuration_space import ConfigurationSpace
-from ConfigSpace.hyperparameters import (
-    UniformFloatHyperparameter,
-)
+from ConfigSpace.hyperparameters import UniformFloatHyperparameter
 
 import numpy as np
 
@@ -59,7 +57,7 @@ class RMSpropOptimizer(BaseOptimizerComponent):
         self.check_requirements(X, y)
 
         self.optimizer = RMSprop(
-            params=X['network'].parameters(),
+            params=X["network"].parameters(),
             lr=self.lr,
             alpha=self.alpha,
             weight_decay=self.weight_decay,
@@ -71,28 +69,23 @@ class RMSpropOptimizer(BaseOptimizerComponent):
     @staticmethod
     def get_properties(dataset_properties: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
         return {
-            'shortname': 'RMSprop',
-            'name': 'RMSprop Optimizer',
+            "shortname": "RMSprop",
+            "name": "RMSprop Optimizer",
         }
 
     @staticmethod
-    def get_hyperparameter_search_space(dataset_properties: Optional[Dict] = None,
-                                        ) -> ConfigurationSpace:
+    def get_hyperparameter_search_space(dataset_properties: Optional[Dict] = None,) -> ConfigurationSpace:
 
         cs = ConfigurationSpace()
 
         # The learning rate for the model
-        lr = UniformFloatHyperparameter('lr', lower=1e-6, upper=1e-1,
-                                        default_value=1e-2, log=True)
+        lr = UniformFloatHyperparameter("lr", lower=1e-6, upper=1e-1, default_value=1e-2, log=True)
 
-        alpha = UniformFloatHyperparameter('alpha', lower=0.1, upper=0.99,
-                                           default_value=0.99)
+        alpha = UniformFloatHyperparameter("alpha", lower=0.1, upper=0.99, default_value=0.99)
 
-        weight_decay = UniformFloatHyperparameter('weight_decay', lower=0.0, upper=0.1,
-                                                  default_value=0.0)
+        weight_decay = UniformFloatHyperparameter("weight_decay", lower=0.0, upper=0.1, default_value=0.0)
 
-        momentum = UniformFloatHyperparameter('momentum', lower=0.0, upper=0.99,
-                                              default_value=0.0)
+        momentum = UniformFloatHyperparameter("momentum", lower=0.0, upper=0.99, default_value=0.0)
 
         cs.add_hyperparameters([lr, alpha, weight_decay, momentum])
 

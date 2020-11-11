@@ -9,6 +9,7 @@ class autoPyTorchTabularPreprocessingComponent(autoPyTorchPreprocessingComponent
     """
      Provides abstract interface for preprocessing algorithms in AutoPyTorch.
     """
+
     def __init__(self) -> None:
         self.preprocessor: Dict[str, Optional[BaseEstimator]] = dict(numerical=None, categorical=None)
 
@@ -22,9 +23,10 @@ class autoPyTorchTabularPreprocessingComponent(autoPyTorchPreprocessingComponent
         Returns:
             Dict[str, BaseEstimator]: early_preprocessor dictionary
         """
-        if (self.preprocessor['numerical'] and self.preprocessor['categorical']) is None:
-            raise AttributeError("{} can't return early_preprocessor dict without fitting first"
-                                 .format(self.__class__.__name__))
+        if (self.preprocessor["numerical"] and self.preprocessor["categorical"]) is None:
+            raise AttributeError(
+                "{} can't return early_preprocessor dict without fitting first".format(self.__class__.__name__)
+            )
         return self.preprocessor
 
     def __str__(self) -> str:
@@ -32,9 +34,9 @@ class autoPyTorchTabularPreprocessingComponent(autoPyTorchPreprocessingComponent
         string = self.__class__.__name__
         info = vars(self)
         # Remove unwanted info
-        info.pop('early_preprocessor', None)
-        info.pop('column_transformer', None)
-        info.pop('random_state', None)
+        info.pop("early_preprocessor", None)
+        info.pop("column_transformer", None)
+        info.pop("random_state", None)
         if len(info.keys()) != 0:
             string += " (" + str(info) + ")"
         return string

@@ -16,9 +16,7 @@ from autoPyTorch.pipeline.components.base_component import (
 from autoPyTorch.pipeline.components.setup.optimizer.base_optimizer import BaseOptimizerComponent
 
 directory = os.path.split(__file__)[0]
-_optimizers = find_components(__package__,
-                              directory,
-                              BaseOptimizerComponent)
+_optimizers = find_components(__package__, directory, BaseOptimizerComponent)
 _addons = ThirdPartyComponents(BaseOptimizerComponent)
 
 
@@ -27,7 +25,6 @@ def add_optimizer(optimizer: BaseOptimizerComponent) -> None:
 
 
 class OptimizerChoice(autoPyTorchChoice):
-
     def get_components(self) -> Dict[str, autoPyTorchComponent]:
         """Returns the available optimizer components
 
@@ -44,10 +41,7 @@ class OptimizerChoice(autoPyTorchChoice):
         return components
 
     def get_available_components(
-        self,
-        dataset_properties: Optional[Dict[str, str]] = None,
-        include: List[str] = None,
-        exclude: List[str] = None,
+        self, dataset_properties: Optional[Dict[str, str]] = None, include: List[str] = None, exclude: List[str] = None,
     ) -> Dict[str, autoPyTorchComponent]:
         """Filters out components based on user provided
         include/exclude directives, as well as the dataset properties
@@ -68,16 +62,14 @@ class OptimizerChoice(autoPyTorchChoice):
             dataset_properties = {}
 
         if include is not None and exclude is not None:
-            raise ValueError(
-                "The argument include and exclude cannot be used together.")
+            raise ValueError("The argument include and exclude cannot be used together.")
 
         available_comp = self.get_components()
 
         if include is not None:
             for incl in include:
                 if incl not in available_comp:
-                    raise ValueError("Trying to include unknown component: "
-                                     "%s" % incl)
+                    raise ValueError("Trying to include unknown component: " "%s" % incl)
 
         components_dict = OrderedDict()
         for name in available_comp:
@@ -89,7 +81,7 @@ class OptimizerChoice(autoPyTorchChoice):
             entry = available_comp[name]
 
             # Exclude itself to avoid infinite loop
-            if entry == OptimizerChoice or hasattr(entry, 'get_components'):
+            if entry == OptimizerChoice or hasattr(entry, "get_components"):
                 continue
 
             # target_type = dataset_properties['target_type']
@@ -126,38 +118,29 @@ class OptimizerChoice(autoPyTorchChoice):
 
         # Compile a list of legal preprocessors for this problem
         available_optimizers = self.get_available_components(
-            dataset_properties=dataset_properties,
-            include=include, exclude=exclude)
+            dataset_properties=dataset_properties, include=include, exclude=exclude
+        )
 
         if len(available_optimizers) == 0:
             raise ValueError("No Optimizer found")
 
         if default is None:
-            defaults = ['SGDOptimizer',
-                        'AdamOptimizer',
-                        'AdamWOptimizer',
-                        'RMSpropOptimizer'
-                        ]
+            defaults = ["SGDOptimizer", "AdamOptimizer", "AdamWOptimizer", "RMSpropOptimizer"]
             for default_ in defaults:
                 if default_ in available_optimizers:
                     default = default_
                     break
 
         optimizer = CSH.CategoricalHyperparameter(
-            '__choice__',
-            list(available_optimizers.keys()),
-            default_value=default
+            "__choice__", list(available_optimizers.keys()), default_value=default
         )
         cs.add_hyperparameter(optimizer)
         for name in available_optimizers:
-            optimizer_configuration_space = available_optimizers[name]. \
-                get_hyperparameter_search_space(dataset_properties)
-            parent_hyperparameter = {'parent': optimizer, 'value': name}
-            cs.add_configuration_space(
-                name,
-                optimizer_configuration_space,
-                parent_hyperparameter=parent_hyperparameter
+            optimizer_configuration_space = available_optimizers[name].get_hyperparameter_search_space(
+                dataset_properties
             )
+            parent_hyperparameter = {"parent": optimizer, "value": name}
+            cs.add_configuration_space(name, optimizer_configuration_space, parent_hyperparameter=parent_hyperparameter)
 
         self.configuration_space_ = cs
         self.dataset_properties_ = dataset_properties

@@ -15,14 +15,14 @@ class TestNormalizers(unittest.TestCase):
 
     def test_image_normalizer(self):
         self.initialise()
-        X = {'channelwise_mean': self.mean, 'channelwise_std': self.std, 'X_train': self.train}
+        X = {"channelwise_mean": self.mean, "channelwise_std": self.std, "X_train": self.train}
 
         normalizer = ImageNormalizer()
         normalizer = normalizer.fit(X)
         X = normalizer.transform(X)
 
         # check if normalizer added to X is instance of self
-        self.assertEqual(X['normalise'], normalizer)
+        self.assertEqual(X["normalise"], normalizer)
         epsilon = 1e-8
         train = self.train - self.mean
         train *= 1.0 / (epsilon + self.std)
@@ -32,13 +32,13 @@ class TestNormalizers(unittest.TestCase):
     def test_no_normalizer(self):
         self.initialise()
 
-        X = {'channelwise_mean': self.mean, 'channelwise_std': self.std, 'X_train': self.train}
+        X = {"channelwise_mean": self.mean, "channelwise_std": self.std, "X_train": self.train}
 
         normalizer = NoNormalizer()
         normalizer = normalizer.fit(X)
         X = normalizer.transform(X)
 
         # check if normalizer added to X is instance of self
-        self.assertEqual(X['normalise'], normalizer)
+        self.assertEqual(X["normalise"], normalizer)
 
         assert_array_equal(self.train, normalizer(self.train))

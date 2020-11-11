@@ -50,15 +50,13 @@ class autoPyTorchPreprocessingComponent(autoPyTorchComponent):
                 so that further stages can be properly fitted
         """
         super().check_requirements(X, y)
-        if 'X_train' not in X:
-            raise ValueError("To fit a early_preprocessor, the fit dictionary "
-                             "Must contain a reference to the training data"
-                             )
+        if "X_train" not in X:
+            raise ValueError(
+                "To fit a early_preprocessor, the fit dictionary " "Must contain a reference to the training data"
+            )
 
     @staticmethod
-    def get_hyperparameter_search_space(
-        dataset_properties: Optional[Dict[str, str]] = None
-    ) -> ConfigurationSpace:
+    def get_hyperparameter_search_space(dataset_properties: Optional[Dict[str, str]] = None) -> ConfigurationSpace:
         """Return the configuration space of this classification algorithm.
 
         Args:

@@ -11,11 +11,7 @@ from ConfigSpace.configuration_space import Configuration, ConfigurationSpace
 from sklearn.base import BaseEstimator
 
 
-def find_components(
-    package: str,
-    directory: str,
-    base_class: BaseEstimator
-) -> Dict[str, BaseEstimator]:
+def find_components(package: str, directory: str, base_class: BaseEstimator) -> Dict[str, BaseEstimator]:
     """Utility to find component on a given directory,
     that inherit from base_class
     Args:
@@ -32,8 +28,7 @@ def find_components(
             module = importlib.import_module(full_module_name)
 
             for member_name, obj in inspect.getmembers(module):
-                if inspect.isclass(obj) and issubclass(obj, base_class) and \
-                        obj != base_class:
+                if inspect.isclass(obj) and issubclass(obj, base_class) and obj != base_class:
                     # TODO test if the obj implements the interface
                     # Keep in mind that this only instantiates the ensemble_wrapper,
                     # but not the real target classifier
@@ -55,6 +50,7 @@ class ThirdPartyComponents(object):
     Args:
         base_class (BaseEstimator) component type desired to be created
     """
+
     def __init__(self, base_class: BaseEstimator) -> None:
         self.base_class = base_class
         self.components = OrderedDict()  # type: Dict[str, BaseEstimator]
@@ -64,31 +60,28 @@ class ThirdPartyComponents(object):
             name = obj.__name__
             classifier = obj
         else:
-            raise TypeError('add_component works only with a subclass of %s' %
-                            str(self.base_class))
+            raise TypeError("add_component works only with a subclass of %s" % str(self.base_class))
 
         properties = set(classifier.get_properties())
         # TODO: Add desired properties when we define them
-        should_be_there = {'shortname', 'name'}
+        should_be_there = {"shortname", "name"}
         for property in properties:
             if property not in should_be_there:
-                raise ValueError('Property %s must not be specified for '
-                                 'algorithm %s. Only the following properties '
-                                 'can be specified: %s' %
-                                 (property, name, str(should_be_there)))
+                raise ValueError(
+                    "Property %s must not be specified for "
+                    "algorithm %s. Only the following properties "
+                    "can be specified: %s" % (property, name, str(should_be_there))
+                )
         for property in should_be_there:
             if property not in properties:
-                raise ValueError('Property %s not specified for algorithm %s' %
-                                 (property, name))
+                raise ValueError("Property %s not specified for algorithm %s" % (property, name))
 
         self.components[name] = classifier
 
 
 class autoPyTorchComponent(BaseEstimator):
-
     @staticmethod
-    def get_properties(dataset_properties: Optional[Dict[str, str]] = None
-                       ) -> Dict[str, Any]:
+    def get_properties(dataset_properties: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """Get the properties of the underlying algorithm.
 
         Args:
@@ -100,9 +93,7 @@ class autoPyTorchComponent(BaseEstimator):
         raise NotImplementedError()
 
     @staticmethod
-    def get_hyperparameter_search_space(
-        dataset_properties: Optional[Dict[str, str]] = None
-    ) -> ConfigurationSpace:
+    def get_hyperparameter_search_space(dataset_properties: Optional[Dict[str, str]] = None) -> ConfigurationSpace:
         """Return the configuration space of this classification algorithm.
 
         Args:
@@ -133,10 +124,9 @@ class autoPyTorchComponent(BaseEstimator):
         -learn-objects>`_ for further information."""
         raise NotImplementedError()
 
-    def set_hyperparameters(self,
-                            configuration: Configuration,
-                            init_params: Optional[Dict[str, Any]] = None
-                            ) -> BaseEstimator:
+    def set_hyperparameters(
+        self, configuration: Configuration, init_params: Optional[Dict[str, Any]] = None
+    ) -> BaseEstimator:
         """
         Applies a configuration to the given component.
         This method translate a hierarchical configuration key,
@@ -155,17 +145,18 @@ class autoPyTorchComponent(BaseEstimator):
 
         for param, value in params.items():
             if not hasattr(self, param):
-                raise ValueError('Cannot set hyperparameter %s for %s because '
-                                 'the hyperparameter does not exist.' %
-                                 (param, str(self)))
+                raise ValueError(
+                    "Cannot set hyperparameter %s for %s because "
+                    "the hyperparameter does not exist." % (param, str(self))
+                )
             setattr(self, param, value)
 
         if init_params is not None:
             for param, value in init_params.items():
                 if not hasattr(self, param):
-                    raise ValueError('Cannot set init param %s for %s because '
-                                     'the init param does not exist.' %
-                                     (param, str(self)))
+                    raise ValueError(
+                        "Cannot set init param %s for %s because " "the init param does not exist." % (param, str(self))
+                    )
                 setattr(self, param, value)
 
         return self
@@ -188,5 +179,5 @@ class autoPyTorchComponent(BaseEstimator):
 
     def __str__(self) -> str:
         """Representation of the current Component"""
-        name = self.get_properties()['name']
+        name = self.get_properties()["name"]
         return "autoPyTorch.pipeline %s" % name

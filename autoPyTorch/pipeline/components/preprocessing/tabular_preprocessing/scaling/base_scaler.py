@@ -1,7 +1,7 @@
 from typing import Any, Dict
 
 from autoPyTorch.pipeline.components.preprocessing.tabular_preprocessing.base_tabular_preprocessing import (
-    autoPyTorchTabularPreprocessingComponent
+    autoPyTorchTabularPreprocessingComponent,
 )
 
 
@@ -19,10 +19,9 @@ class BaseScaler(autoPyTorchTabularPreprocessingComponent):
         Returns:
             (Dict[str, Any]): the updated 'X' dictionary
         """
-        if self.preprocessor['numerical'] is None and self.preprocessor['categorical'] is None:
-            raise ValueError("cant call transform on {} without fitting first."
-                             .format(self.__class__.__name__))
-        X.update({'scaler': self.preprocessor})
+        if self.preprocessor["numerical"] is None and self.preprocessor["categorical"] is None:
+            raise ValueError("cant call transform on {} without fitting first.".format(self.__class__.__name__))
+        X.update({"scaler": self.preprocessor})
         return X
 
     def check_requirements(self, X: Dict[str, Any], y: Any = None) -> None:
@@ -37,8 +36,9 @@ class BaseScaler(autoPyTorchTabularPreprocessingComponent):
                 so that further stages can be properly fitted
         """
         super().check_requirements(X, y)
-        if 'numerical_columns' not in X:
-            raise ValueError("To fit a scaler, the fit dictionary "
-                             "must contain a list of the numerical "
-                             "columns of the data but only contains {}".format(X.keys())
-                             )
+        if "numerical_columns" not in X:
+            raise ValueError(
+                "To fit a scaler, the fit dictionary "
+                "must contain a list of the numerical "
+                "columns of the data but only contains {}".format(X.keys())
+            )

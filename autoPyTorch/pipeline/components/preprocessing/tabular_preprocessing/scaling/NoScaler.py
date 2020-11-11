@@ -9,9 +9,8 @@ class NoScaler(BaseScaler):
     """
     No scaling performed
     """
-    def __init__(self,
-                 random_state: Optional[Union[np.random.RandomState, int]] = None
-                 ):
+
+    def __init__(self, random_state: Optional[Union[np.random.RandomState, int]] = None):
         super().__init__()
         self.random_state = random_state
 
@@ -42,12 +41,12 @@ class NoScaler(BaseScaler):
         Returns:
             np.ndarray: Transformed features
         """
-        X.update({'scaler': self.preprocessor})
+        X.update({"scaler": self.preprocessor})
         return X
 
     @staticmethod
     def get_properties(dataset_properties: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
         return {
-            'shortname': 'NoScaler',
-            'name': 'No Scaler',
+            "shortname": "NoScaler",
+            "name": "No Scaler",
         }

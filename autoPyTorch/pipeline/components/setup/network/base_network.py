@@ -39,8 +39,8 @@ class BaseNetworkComponent(autoPyTorchSetupComponent):
         # information to fit this stage
         self.check_requirements(X, y)
 
-        in_features = X['num_features']
-        out_features = X['num_classes']
+        in_features = X["num_features"]
+        out_features = X["num_classes"]
 
         self.network = self.build_network(in_features, out_features)
 
@@ -73,7 +73,7 @@ class BaseNetworkComponent(autoPyTorchSetupComponent):
         Returns:
             np.ndarray: Transformed features
         """
-        X.update({'network': self.network})
+        X.update({"network": self.network})
         return X
 
     def get_network(self) -> torch.nn.Module:
@@ -95,30 +95,24 @@ class BaseNetworkComponent(autoPyTorchSetupComponent):
 
         # For the Network, we need the number of input features,
         # to build the first network layer
-        if 'num_features' not in X.keys():
-            raise ValueError("Could not parse the number of input features in the fit dictionary "
-                             "To fit a network, the number of features is needed to define "
-                             "the hidden layers, yet the dict contains only: {}".format(
-                                 X.keys()
-                             )
-                             )
+        if "num_features" not in X.keys():
+            raise ValueError(
+                "Could not parse the number of input features in the fit dictionary "
+                "To fit a network, the number of features is needed to define "
+                "the hidden layers, yet the dict contains only: {}".format(X.keys())
+            )
 
-        assert isinstance(X['num_features'], numbers.Integral), "num_features: {}".format(
-            type(X['num_features'])
-        )
+        assert isinstance(X["num_features"], numbers.Integral), "num_features: {}".format(type(X["num_features"]))
 
         # For the Network, we need the number of classes,
         # to build the last layer
-        if 'num_classes' not in X:
-            raise ValueError("Could not parse the number of classes in the fit dictionary "
-                             "To fit a network, the number of classes is needed to define "
-                             "the hidden layers, yet the dict contains only: {}".format(
-                                 X.keys()
-                             )
-                             )
-        assert isinstance(X['num_classes'], numbers.Integral), "num_classes: {}".format(
-            type(X['num_classes'])
-        )
+        if "num_classes" not in X:
+            raise ValueError(
+                "Could not parse the number of classes in the fit dictionary "
+                "To fit a network, the number of classes is needed to define "
+                "the hidden layers, yet the dict contains only: {}".format(X.keys())
+            )
+        assert isinstance(X["num_classes"], numbers.Integral), "num_classes: {}".format(type(X["num_classes"]))
 
     @classmethod
     def get_activations_dict(cls) -> Dict[str, torch.nn.Module]:
@@ -127,16 +121,16 @@ class BaseNetworkComponent(autoPyTorchSetupComponent):
         when dynamically building a network.
         """
         return {
-            'relu': torch.nn.ReLU,
-            'sigmoid': torch.nn.Sigmoid,
-            'tanh': torch.nn.Tanh,
-            'leakyrelu': torch.nn.LeakyReLU,
-            'selu': torch.nn.SELU,
-            'rrelu': torch.nn.RReLU,
-            'tanhshrink': torch.nn.Tanhshrink,
-            'hardtanh': torch.nn.Hardtanh,
-            'elu': torch.nn.ELU,
-            'prelu': torch.nn.PReLU,
+            "relu": torch.nn.ReLU,
+            "sigmoid": torch.nn.Sigmoid,
+            "tanh": torch.nn.Tanh,
+            "leakyrelu": torch.nn.LeakyReLU,
+            "selu": torch.nn.SELU,
+            "rrelu": torch.nn.RReLU,
+            "tanhshrink": torch.nn.Tanhshrink,
+            "hardtanh": torch.nn.Hardtanh,
+            "elu": torch.nn.ELU,
+            "prelu": torch.nn.PReLU,
         }
 
     def get_network_weights(self) -> torch.nn.parameter.Parameter:
@@ -157,7 +151,7 @@ class BaseNetworkComponent(autoPyTorchSetupComponent):
         string = self.network.__class__.__name__
         info = vars(self)
         # Remove unwanted info
-        info.pop('network', None)
-        info.pop('random_state', None)
+        info.pop("network", None)
+        info.pop("random_state", None)
         string += " (" + str(info) + ")"
         return string

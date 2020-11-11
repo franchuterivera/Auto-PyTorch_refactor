@@ -10,25 +10,18 @@ import torch.nn as nn
 
 import autoPyTorch.pipeline.components.setup.lr_scheduler.base_scheduler_choice as lr_components
 import autoPyTorch.pipeline.components.setup.network.base_network_choice as network_components
-import autoPyTorch.pipeline.components.setup.network_initializer.base_network_init_choice as \
-    network_initializer_components
+import autoPyTorch.pipeline.components.setup.network_initializer.base_network_init_choice as network_initializer_components  # noqa
 import autoPyTorch.pipeline.components.setup.optimizer.base_optimizer_choice as optimizer_components
-from autoPyTorch.pipeline.components.setup.lr_scheduler.base_scheduler_choice import (
-    BaseLRComponent,
-    SchedulerChoice
-)
+from autoPyTorch.pipeline.components.setup.lr_scheduler.base_scheduler_choice import BaseLRComponent, SchedulerChoice
 from autoPyTorch.pipeline.components.setup.network.MLPNet import MLPNet
-from autoPyTorch.pipeline.components.setup.network.base_network_choice import (
-    BaseNetworkComponent,
-    NetworkChoice
-)
+from autoPyTorch.pipeline.components.setup.network.base_network_choice import BaseNetworkComponent, NetworkChoice
 from autoPyTorch.pipeline.components.setup.network_initializer.base_network_init_choice import (
     BaseNetworkInitializerComponent,
-    NetworkInitializerChoice
+    NetworkInitializerChoice,
 )
 from autoPyTorch.pipeline.components.setup.optimizer.base_optimizer_choice import (
     BaseOptimizerComponent,
-    OptimizerChoice
+    OptimizerChoice,
 )
 
 
@@ -43,8 +36,8 @@ class DummyLR(BaseLRComponent):
 
     def get_properties(dataset_properties=None):
         return {
-            'shortname': 'Dummy',
-            'name': 'Dummy',
+            "shortname": "Dummy",
+            "name": "Dummy",
         }
 
 
@@ -59,8 +52,8 @@ class DummyOptimizer(BaseOptimizerComponent):
 
     def get_properties(dataset_properties=None):
         return {
-            'shortname': 'Dummy',
-            'name': 'Dummy',
+            "shortname": "Dummy",
+            "name": "Dummy",
         }
 
 
@@ -75,8 +68,8 @@ class DummyNet(BaseNetworkComponent):
 
     def get_properties(dataset_properties=None):
         return {
-            'shortname': 'Dummy',
-            'name': 'Dummy',
+            "shortname": "Dummy",
+            "name": "Dummy",
         }
 
 
@@ -91,8 +84,8 @@ class DummyNetworkInitializer(BaseNetworkInitializerComponent):
 
     def get_properties(dataset_properties=None):
         return {
-            'shortname': 'Dummy',
-            'name': 'Dummy',
+            "shortname": "Dummy",
+            "name": "Dummy",
         }
 
 
@@ -145,8 +138,7 @@ class SchedulerTest(unittest.TestCase):
 
         # Make sure that all hyperparameters are part of the serach space
         self.assertListEqual(
-            sorted(cs.get_hyperparameter('__choice__').choices),
-            sorted(list(scheduler_choice.get_components().keys()))
+            sorted(cs.get_hyperparameter("__choice__").choices), sorted(list(scheduler_choice.get_components().keys()))
         )
 
         # Make sure we can properly set some random configs
@@ -158,15 +150,16 @@ class SchedulerTest(unittest.TestCase):
             config_dict = copy.deepcopy(config.get_dictionary())
             scheduler_choice.set_hyperparameters(config)
 
-            self.assertEqual(scheduler_choice.choice.__class__,
-                             scheduler_choice.get_components()[config_dict['__choice__']])
+            self.assertEqual(
+                scheduler_choice.choice.__class__, scheduler_choice.get_components()[config_dict["__choice__"]]
+            )
 
             # Then check the choice configuration
-            selected_choice = config_dict.pop('__choice__', None)
+            selected_choice = config_dict.pop("__choice__", None)
             for key, value in config_dict.items():
                 # Remove the selected_choice string from the parameter
                 # so we can query in the object for it
-                key = key.replace(selected_choice + ':', '')
+                key = key.replace(selected_choice + ":", "")
                 self.assertIn(key, vars(scheduler_choice.choice))
                 self.assertEqual(value, scheduler_choice.choice.__dict__[key])
 
@@ -179,7 +172,7 @@ class SchedulerTest(unittest.TestCase):
         lr_components.add_scheduler(DummyLR)
         self.assertEqual(len(lr_components._addons.components), 1)
         cs = SchedulerChoice(dataset_properties={}).get_hyperparameter_search_space()
-        self.assertIn('DummyLR', str(cs))
+        self.assertIn("DummyLR", str(cs))
 
 
 class OptimizerTest(unittest.TestCase):
@@ -231,8 +224,7 @@ class OptimizerTest(unittest.TestCase):
 
         # Make sure that all hyperparameters are part of the serach space
         self.assertListEqual(
-            sorted(cs.get_hyperparameter('__choice__').choices),
-            sorted(list(optimizer_choice.get_components().keys()))
+            sorted(cs.get_hyperparameter("__choice__").choices), sorted(list(optimizer_choice.get_components().keys()))
         )
 
         # Make sure we can properly set some random configs
@@ -244,15 +236,16 @@ class OptimizerTest(unittest.TestCase):
             config_dict = copy.deepcopy(config.get_dictionary())
             optimizer_choice.set_hyperparameters(config)
 
-            self.assertEqual(optimizer_choice.choice.__class__,
-                             optimizer_choice.get_components()[config_dict['__choice__']])
+            self.assertEqual(
+                optimizer_choice.choice.__class__, optimizer_choice.get_components()[config_dict["__choice__"]]
+            )
 
             # Then check the choice configuration
-            selected_choice = config_dict.pop('__choice__', None)
+            selected_choice = config_dict.pop("__choice__", None)
             for key, value in config_dict.items():
                 # Remove the selected_choice string from the parameter
                 # so we can query in the object for it
-                key = key.replace(selected_choice + ':', '')
+                key = key.replace(selected_choice + ":", "")
                 self.assertIn(key, vars(optimizer_choice.choice))
                 self.assertEqual(value, optimizer_choice.choice.__dict__[key])
 
@@ -265,7 +258,7 @@ class OptimizerTest(unittest.TestCase):
         optimizer_components.add_optimizer(DummyOptimizer)
         self.assertEqual(len(optimizer_components._addons.components), 1)
         cs = OptimizerChoice(dataset_properties={}).get_hyperparameter_search_space()
-        self.assertIn('DummyOptimizer', str(cs))
+        self.assertIn("DummyOptimizer", str(cs))
 
 
 class NetworkTest(unittest.TestCase):
@@ -317,8 +310,7 @@ class NetworkTest(unittest.TestCase):
 
         # Make sure that all hyperparameters are part of the serach space
         self.assertListEqual(
-            sorted(cs.get_hyperparameter('__choice__').choices),
-            sorted(list(network_choice.get_components().keys()))
+            sorted(cs.get_hyperparameter("__choice__").choices), sorted(list(network_choice.get_components().keys()))
         )
 
         # Make sure we can properly set some random configs
@@ -330,19 +322,19 @@ class NetworkTest(unittest.TestCase):
             config_dict = copy.deepcopy(config.get_dictionary())
             network_choice.set_hyperparameters(config)
 
-            self.assertEqual(network_choice.choice.__class__,
-                             network_choice.get_components()[config_dict['__choice__']])
+            self.assertEqual(
+                network_choice.choice.__class__, network_choice.get_components()[config_dict["__choice__"]]
+            )
 
             # Then check the choice configuration
-            selected_choice = config_dict.pop('__choice__', None)
+            selected_choice = config_dict.pop("__choice__", None)
             for key, value in config_dict.items():
                 # Remove the selected_choice string from the parameter
                 # so we can query in the object for it
-                key = key.replace(selected_choice + ':', '')
+                key = key.replace(selected_choice + ":", "")
                 # In the case of MLP, parameters are dynamic, so they exist in config
-                print(f"vars={vars(network_choice.choice)}")
                 parameters = vars(network_choice.choice)
-                parameters.update(vars(network_choice.choice)['config'])
+                parameters.update(vars(network_choice.choice)["config"])
                 self.assertIn(key, parameters)
                 self.assertEqual(value, parameters[key])
 
@@ -355,49 +347,40 @@ class NetworkTest(unittest.TestCase):
         network_components.add_network(DummyNet)
         self.assertEqual(len(network_components._addons.components), 1)
         cs = NetworkChoice(dataset_properties={}).get_hyperparameter_search_space()
-        self.assertIn('DummyNet', str(cs))
+        self.assertIn("DummyNet", str(cs))
 
     def test_mlp_network_builder(self):
         """Makes sure that we honor the given network architecture
         when building an MLP"""
 
         X = {
-            'num_features': 10,
-            'num_classes': 2,
+            "num_features": 10,
+            "num_classes": 2,
         }
         for num_groups, activation, use_dropout, dictionary in [
             (
-                3, 'relu', True, {
-                'num_units_1': 11,
-                'num_units_2': 18,
-                'num_units_3': 11,
-                'dropout_1': 0.5,
-                'dropout_2': 0.5,
-                'dropout_3': 0.5,
-                }
+                3,
+                "relu",
+                True,
+                {
+                    "num_units_1": 11,
+                    "num_units_2": 18,
+                    "num_units_3": 11,
+                    "dropout_1": 0.5,
+                    "dropout_2": 0.5,
+                    "dropout_3": 0.5,
+                },
             ),
+            (3, "relu", False, {"num_units_1": 12, "num_units_2": 14, "num_units_3": 14}),
             (
-                3, 'relu', False, {
-                'num_units_1': 12,
-                'num_units_2': 14,
-                'num_units_3': 14,
-                }
+                5,
+                "tanh",
+                False,
+                {"num_units_1": 12, "num_units_2": 14, "num_units_3": 14, "num_units_4": 17, "num_units_5": 14},
             ),
-            (
-                5, 'tanh', False, {
-                'num_units_1': 12,
-                'num_units_2': 14,
-                'num_units_3': 14,
-                'num_units_4': 17,
-                'num_units_5': 14,
-                }
-            )
         ]:
             network = MLPNet(
-                num_groups=num_groups,
-                intermediate_activation=activation,
-                use_dropout=use_dropout,
-                **dictionary,
+                num_groups=num_groups, intermediate_activation=activation, use_dropout=use_dropout, **dictionary,
             )
 
             # Fit the network and check it's contents
@@ -409,44 +392,42 @@ class NetworkTest(unittest.TestCase):
             # Make sure that every parameter comply with the desired output
 
             # The last layer has size equal to the number of classes
-            self.assertEqual(
-                list(network.network.named_modules())[1][1].in_features,
-                X['num_features']
-            )
+            self.assertEqual(list(network.network.named_modules())[1][1].in_features, X["num_features"])
 
             # The last layer has size equal to the number of classes
-            self.assertEqual(
-                list(network.network.named_modules())[-1][1].out_features,
-                X['num_classes']
-            )
+            self.assertEqual(list(network.network.named_modules())[-1][1].out_features, X["num_classes"])
 
             # Make sure the number of layers is honored
-            layers = [module for name, module in list(network.network.named_modules())
-                      if isinstance(module, nn.Linear)]
+            layers = [module for name, module in list(network.network.named_modules()) if isinstance(module, nn.Linear)]
             self.assertEqual(len(layers), num_groups + 1)
 
             # Make sure the number of units is honored
-            num_units = [module.out_features for name, module in list(
-                network.network.named_modules()) if isinstance(module, nn.Linear)]
-            self.assertEqual([dictionary['num_units_' + str(i)] for i in range(1, num_groups + 1)
-                              ] + [X['num_classes']],
-                             num_units
-                             )
+            num_units = [
+                module.out_features
+                for name, module in list(network.network.named_modules())
+                if isinstance(module, nn.Linear)
+            ]
+            self.assertEqual(
+                [dictionary["num_units_" + str(i)] for i in range(1, num_groups + 1)] + [X["num_classes"]], num_units
+            )
 
-            dropouts = [module for name, module in list(network.network.named_modules())
-                        if isinstance(module, nn.Dropout)]
+            dropouts = [
+                module for name, module in list(network.network.named_modules()) if isinstance(module, nn.Dropout)
+            ]
 
             if use_dropout:
                 self.assertEqual(len(dropouts), num_groups)
             else:
                 self.assertEqual(len(dropouts), 0)
 
-            if 'relu' in activation:
-                activations = [module for name, module in list(network.network.named_modules())
-                               if isinstance(module, nn.ReLU)]
-            elif 'tanh' in activation:
-                activations = [module for name, module in list(network.network.named_modules())
-                               if isinstance(module, nn.Tanh)]
+            if "relu" in activation:
+                activations = [
+                    module for name, module in list(network.network.named_modules()) if isinstance(module, nn.ReLU)
+                ]
+            elif "tanh" in activation:
+                activations = [
+                    module for name, module in list(network.network.named_modules()) if isinstance(module, nn.Tanh)
+                ]
             self.assertEqual(len(activations), num_groups)
 
 
@@ -499,8 +480,8 @@ class NetworkInitializerTest(unittest.TestCase):
 
         # Make sure that all hyperparameters are part of the serach space
         self.assertListEqual(
-            sorted(cs.get_hyperparameter('__choice__').choices),
-            sorted(list(network_initializer_choice.get_components().keys()))
+            sorted(cs.get_hyperparameter("__choice__").choices),
+            sorted(list(network_initializer_choice.get_components().keys())),
         )
 
         # Make sure we can properly set some random configs
@@ -512,15 +493,17 @@ class NetworkInitializerTest(unittest.TestCase):
             config_dict = copy.deepcopy(config.get_dictionary())
             network_initializer_choice.set_hyperparameters(config)
 
-            self.assertEqual(network_initializer_choice.choice.__class__,
-                             network_initializer_choice.get_components()[config_dict['__choice__']])
+            self.assertEqual(
+                network_initializer_choice.choice.__class__,
+                network_initializer_choice.get_components()[config_dict["__choice__"]],
+            )
 
             # Then check the choice configuration
-            selected_choice = config_dict.pop('__choice__', None)
+            selected_choice = config_dict.pop("__choice__", None)
             for key, value in config_dict.items():
                 # Remove the selected_choice string from the parameter
                 # so we can query in the object for it
-                key = key.replace(selected_choice + ':', '')
+                key = key.replace(selected_choice + ":", "")
                 self.assertIn(key, vars(network_initializer_choice.choice))
                 self.assertEqual(value, network_initializer_choice.choice.__dict__[key])
 
@@ -533,8 +516,8 @@ class NetworkInitializerTest(unittest.TestCase):
         network_initializer_components.add_network_initializer(DummyNetworkInitializer)
         self.assertEqual(len(network_initializer_components._addons.components), 1)
         cs = NetworkInitializerChoice(dataset_properties={}).get_hyperparameter_search_space()
-        self.assertIn('DummyNetworkInitializer', str(cs))
+        self.assertIn("DummyNetworkInitializer", str(cs))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

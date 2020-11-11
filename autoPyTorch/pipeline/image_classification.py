@@ -9,9 +9,10 @@ from sklearn.base import ClassifierMixin
 from autoPyTorch.pipeline.base_pipeline import BasePipeline
 from autoPyTorch.pipeline.components.base_choice import autoPyTorchChoice
 from autoPyTorch.pipeline.components.preprocessing.image_preprocessing.normalise.base_normalizer_choice import (
-    NormalizerChoice
+    NormalizerChoice,
 )
 from autoPyTorch.pipeline.components.setup.early_preprocessor.EarlyPreprocessing import EarlyPreprocessing
+
 # from autoPyTorch.pipeline.components.setup.lr_scheduler.base_scheduler_choice import SchedulerChoice
 # from autoPyTorch.pipeline.components.setup.network.base_network_choice import NetworkChoice
 # from autoPyTorch.pipeline.components.setup.optimizer.base_optimizer_choice import OptimizerChoice
@@ -52,17 +53,12 @@ class ImageClassificationPipeline(ClassifierMixin, BasePipeline):
         include: Optional[Dict[str, Any]] = None,
         exclude: Optional[Dict[str, Any]] = None,
         random_state: Optional[np.random.RandomState] = None,
-        init_params: Optional[Dict[str, Any]] = None
+        init_params: Optional[Dict[str, Any]] = None,
     ):
-        super().__init__(
-            config, steps, dataset_properties, include, exclude,
-            random_state, init_params)
+        super().__init__(config, steps, dataset_properties, include, exclude, random_state, init_params)
 
     def fit_transformer(
-        self,
-        X: np.ndarray,
-        y: np.ndarray,
-        fit_params: Optional[Dict[str, Any]] = None
+        self, X: np.ndarray, y: np.ndarray, fit_params: Optional[Dict[str, Any]] = None
     ) -> Tuple[np.ndarray, Optional[Dict[str, Any]]]:
         """Fits the pipeline given a training (X,y) pair
 
@@ -81,8 +77,7 @@ class ImageClassificationPipeline(ClassifierMixin, BasePipeline):
         if fit_params is None:
             fit_params = {}
 
-        X, fit_params = super().fit_transformer(
-            X, y, fit_params=fit_params)
+        X, fit_params = super().fit_transformer(X, y, fit_params=fit_params)
 
         return X, fit_params
 
@@ -102,18 +97,15 @@ class ImageClassificationPipeline(ClassifierMixin, BasePipeline):
 
         else:
             if not isinstance(batch_size, int):
-                raise ValueError("Argument 'batch_size' must be of type int, "
-                                 "but is '%s'" % type(batch_size))
+                raise ValueError("Argument 'batch_size' must be of type int, " "but is '%s'" % type(batch_size))
             if batch_size <= 0:
-                raise ValueError("Argument 'batch_size' must be positive, "
-                                 "but is %d" % batch_size)
+                raise ValueError("Argument 'batch_size' must be positive, " "but is %d" % batch_size)
 
             else:
                 # Probe for the target array dimensions
                 target = self.predict_proba(X[0:2].copy())
 
-                y = np.zeros((X.shape[0], target.shape[1]),
-                             dtype=np.float32)
+                y = np.zeros((X.shape[0], target.shape[1]), dtype=np.float32)
 
                 for k in range(max(1, int(np.ceil(float(X.shape[0]) / batch_size)))):
                     batch_from = k * batch_size
@@ -123,11 +115,12 @@ class ImageClassificationPipeline(ClassifierMixin, BasePipeline):
 
                 return y
 
-    def _get_hyperparameter_search_space(self,
-                                         dataset_properties: Dict[str, Any],
-                                         include: Optional[Dict[str, Any]] = None,
-                                         exclude: Optional[Dict[str, Any]] = None,
-                                         ) -> ConfigurationSpace:
+    def _get_hyperparameter_search_space(
+        self,
+        dataset_properties: Dict[str, Any],
+        include: Optional[Dict[str, Any]] = None,
+        exclude: Optional[Dict[str, Any]] = None,
+    ) -> ConfigurationSpace:
         """Create the hyperparameter configuration space.
 
         For the given steps, and the Choices within that steps,
@@ -150,16 +143,16 @@ class ImageClassificationPipeline(ClassifierMixin, BasePipeline):
 
         if dataset_properties is None or not isinstance(dataset_properties, dict):
             dataset_properties = dict()
-        if 'target_type' not in dataset_properties:
-            dataset_properties['target_type'] = 'image_classification'
-        if dataset_properties['target_type'] != 'image_classification':
-            dataset_properties['target_type'] = 'image_classification'
+        if "target_type" not in dataset_properties:
+            dataset_properties["target_type"] = "image_classification"
+        if dataset_properties["target_type"] != "image_classification":
+            dataset_properties["target_type"] = "image_classification"
         # get the base search space given this
         # dataset properties. Then overwrite with custom
         # classification requirements
         cs = self._get_base_search_space(
-            cs=cs, dataset_properties=dataset_properties,
-            exclude=exclude, include=include, pipeline=self.steps)
+            cs=cs, dataset_properties=dataset_properties, exclude=exclude, include=include, pipeline=self.steps
+        )
 
         # Here we add custom code, like this with this
         # is not a valid configuration
@@ -168,8 +161,7 @@ class ImageClassificationPipeline(ClassifierMixin, BasePipeline):
         self.dataset_properties = dataset_properties
         return cs
 
-    def _get_pipeline_steps(self, dataset_properties: Optional[Dict[str, Any]],
-                            ) -> List[Tuple[str, autoPyTorchChoice]]:
+    def _get_pipeline_steps(self, dataset_properties: Optional[Dict[str, Any]],) -> List[Tuple[str, autoPyTorchChoice]]:
         """
         Defines what steps a pipeline should follow.
         The step itself has choices given via autoPyTorchChoice.
@@ -180,18 +172,20 @@ class ImageClassificationPipeline(ClassifierMixin, BasePipeline):
         """
         steps = []  # type: List[Tuple[str, autoPyTorchChoice]]
 
-        default_dataset_properties = {'target_type': 'image_classification'}
+        default_dataset_properties = {"target_type": "image_classification"}
         if dataset_properties is not None:
             default_dataset_properties.update(dataset_properties)
 
-        steps.extend([
-            ("normalizer", NormalizerChoice(default_dataset_properties)),
-            ("preprocessing", EarlyPreprocessing()),
-            # ("network", NetworkChoice(default_dataset_properties)),
-            # ("network_init", NetworkInitializerChoice(default_dataset_properties)),
-            # ("optimizer", OptimizerChoice(default_dataset_properties)),
-            # ("lr_scheduler", SchedulerChoice(default_dataset_properties)),
-        ])
+        steps.extend(
+            [
+                ("normalizer", NormalizerChoice(default_dataset_properties)),
+                ("preprocessing", EarlyPreprocessing()),
+                # ("network", NetworkChoice(default_dataset_properties)),
+                # ("network_init", NetworkInitializerChoice(default_dataset_properties)),
+                # ("optimizer", OptimizerChoice(default_dataset_properties)),
+                # ("lr_scheduler", SchedulerChoice(default_dataset_properties)),
+            ]
+        )
         return steps
 
     def _get_estimator_hyperparameter_name(self) -> str:

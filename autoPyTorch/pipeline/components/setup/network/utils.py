@@ -1,5 +1,6 @@
 import random
 import typing
+import warnings
 
 import torch
 from torch.autograd import Function
@@ -24,9 +25,9 @@ class ShakeShakeFunction(Function):
         return y
 
     @staticmethod
-    def backward(ctx: typing.Any,
-                 grad_output: torch.Tensor
-                 ) -> typing.Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    def backward(
+        ctx: typing.Any, grad_output: torch.Tensor
+    ) -> typing.Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         x1, x2, alpha, beta = ctx.saved_variables
         grad_x1 = grad_x2 = grad_alpha = grad_beta = None
 
@@ -43,21 +44,18 @@ shake_shake = ShakeShakeFunction.apply
 
 class ShakeDropFunction(Function):
     @staticmethod
-    def forward(ctx: typing.Any,
-                x: torch.tensor,
-                alpha: torch.tensor,
-                beta: torch.tensor,
-                bl: torch.tensor,
-                ) -> torch.Tensor:
+    def forward(
+        ctx: typing.Any, x: torch.tensor, alpha: torch.tensor, beta: torch.tensor, bl: torch.tensor,
+    ) -> torch.Tensor:
         ctx.save_for_backward(x, alpha, beta, bl)
 
         y = (bl + alpha - bl * alpha) * x
         return y
 
     @staticmethod
-    def backward(ctx: typing.Any,
-                 grad_output: torch.Tensor
-                 ) -> typing.Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    def backward(
+        ctx: typing.Any, grad_output: torch.Tensor
+    ) -> typing.Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         x, alpha, beta, bl = ctx.saved_variables
         grad_x = grad_alpha = grad_beta = grad_bl = None
 
@@ -70,8 +68,7 @@ class ShakeDropFunction(Function):
 shake_drop = ShakeDropFunction.apply
 
 
-def shake_get_alpha_beta(is_training: bool, is_cuda: bool
-                         ) -> typing.Tuple[torch.tensor, torch.tensor]:
+def shake_get_alpha_beta(is_training: bool, is_cuda: bool) -> typing.Tuple[torch.tensor, torch.tensor]:
     if is_training:
         result = (torch.FloatTensor([0.5]), torch.FloatTensor([0.5]))
         return result if not is_cuda else (result[0].cuda(), result[1].cuda())
@@ -88,11 +85,7 @@ def shake_get_alpha_beta(is_training: bool, is_cuda: bool
 
 
 def shake_drop_get_bl(
-        block_index: int,
-        min_prob_no_shake: float,
-        num_blocks: int,
-        is_training: bool,
-        is_cuda: bool
+    block_index: int, min_prob_no_shake: float, num_blocks: int, is_training: bool, is_cuda: bool
 ) -> torch.tensor:
     pl = 1 - ((block_index + 1) / num_blocks) * (1 - min_prob_no_shake)
 
@@ -108,25 +101,21 @@ def shake_drop_get_bl(
 
 
 def get_shaped_neuron_counts(
-    shape: str,
-    in_feat: int,
-    out_feat: int,
-    max_neurons: int,
-    layer_count: int
+    shape: str, in_feat: int, out_feat: int, max_neurons: int, layer_count: int
 ) -> typing.List[int]:
     counts = []  # type: typing.List[int]
 
-    if (layer_count <= 0):
+    if layer_count <= 0:
         return counts
 
-    if (layer_count == 1):
+    if layer_count == 1:
         counts.append(out_feat)
         return counts
 
     max_neurons = max(in_feat, max_neurons)
     # https://mikkokotila.github.io/slate/#shapes
 
-    if shape == 'brick':
+    if shape == "brick":
         #
         #   |        |
         #   |        |
@@ -139,7 +128,7 @@ def get_shaped_neuron_counts(
             counts.append(max_neurons)
         counts.append(out_feat)
 
-    if shape == 'triangle':
+    if shape == "triangle":
         #
         #        /  \
         #       /    \
@@ -157,7 +146,7 @@ def get_shaped_neuron_counts(
         counts.append(max_neurons)
         counts.append(out_feat)
 
-    if shape == 'funnel':
+    if shape == "funnel":
         #
         #   \            /
         #    \          /
@@ -177,7 +166,7 @@ def get_shaped_neuron_counts(
 
         counts.append(out_feat)
 
-    if shape == 'long_funnel':
+    if shape == "long_funnel":
         #
         #   |        |
         #   |        |
@@ -188,16 +177,16 @@ def get_shaped_neuron_counts(
         #
         brick_layer = int(layer_count / 2)
         funnel_layer = layer_count - brick_layer
-        counts.extend(get_shaped_neuron_counts(
-                      'brick', in_feat, max_neurons, max_neurons, brick_layer))
-        counts.extend(get_shaped_neuron_counts(
-                      'funnel', in_feat, out_feat, max_neurons, funnel_layer))
+        counts.extend(get_shaped_neuron_counts("brick", in_feat, max_neurons, max_neurons, brick_layer))
+        counts.extend(get_shaped_neuron_counts("funnel", in_feat, out_feat, max_neurons, funnel_layer))
 
-        if (len(counts) != layer_count):
-            print("\nWarning: long funnel layer count does not match "
-                  "" + str(layer_count) + " != " + str(len(counts)) + "\n")
+        if len(counts) != layer_count:
+            warnings.warn(
+                "\nWarning: long funnel layer count does not match "
+                "" + str(layer_count) + " != " + str(len(counts)) + "\n"
+            )
 
-    if shape == 'diamond':
+    if shape == "diamond":
         #
         #     /  \
         #    /    \
@@ -208,25 +197,25 @@ def get_shaped_neuron_counts(
         #
         triangle_layer = int(layer_count / 2) + 1
         funnel_layer = layer_count - triangle_layer
-        counts.extend(get_shaped_neuron_counts(
-                      'triangle', in_feat, max_neurons, max_neurons, triangle_layer))
+        counts.extend(get_shaped_neuron_counts("triangle", in_feat, max_neurons, max_neurons, triangle_layer))
         remove_triangle_layer = len(counts) > 1
-        if (remove_triangle_layer):
+        if remove_triangle_layer:
             # remove the last two layers since max_neurons == out_features
             # (-> two layers with the same size)
             counts = counts[0:-2]
-        counts.extend(get_shaped_neuron_counts(
-                      'funnel',
-                      max_neurons,
-                      out_feat,
-                      max_neurons,
-                      funnel_layer + (2 if remove_triangle_layer else 0)))
+        counts.extend(
+            get_shaped_neuron_counts(
+                "funnel", max_neurons, out_feat, max_neurons, funnel_layer + (2 if remove_triangle_layer else 0)
+            )
+        )
 
-        if (len(counts) != layer_count):
-            print("\nWarning: diamond layer count does not match "
-                  "" + str(layer_count) + " != " + str(len(counts)) + "\n")
+        if len(counts) != layer_count:
+            warnings.warn(
+                "\nWarning: diamond layer count does not match "
+                "" + str(layer_count) + " != " + str(len(counts)) + "\n"
+            )
 
-    if shape == 'hexagon':
+    if shape == "hexagon":
         #
         #     /  \
         #    /    \
@@ -238,18 +227,17 @@ def get_shaped_neuron_counts(
         triangle_layer = int(layer_count / 3) + 1
         funnel_layer = triangle_layer
         brick_layer = layer_count - triangle_layer - funnel_layer
-        counts.extend(get_shaped_neuron_counts(
-                      'triangle', in_feat, max_neurons, max_neurons, triangle_layer))
-        counts.extend(get_shaped_neuron_counts(
-                      'brick', max_neurons, max_neurons, max_neurons, brick_layer))
-        counts.extend(get_shaped_neuron_counts(
-                      'funnel', max_neurons, out_feat, max_neurons, funnel_layer))
+        counts.extend(get_shaped_neuron_counts("triangle", in_feat, max_neurons, max_neurons, triangle_layer))
+        counts.extend(get_shaped_neuron_counts("brick", max_neurons, max_neurons, max_neurons, brick_layer))
+        counts.extend(get_shaped_neuron_counts("funnel", max_neurons, out_feat, max_neurons, funnel_layer))
 
-        if (len(counts) != layer_count):
-            print("\nWarning: hexagon layer count does not match "
-                  "" + str(layer_count) + " != " + str(len(counts)) + "\n")
+        if len(counts) != layer_count:
+            warnings.warn(
+                "\nWarning: hexagon layer count does not match "
+                "" + str(layer_count) + " != " + str(len(counts)) + "\n"
+            )
 
-    if shape == 'stairs':
+    if shape == "stairs":
         #
         #   |          |
         #   |_        _|
@@ -273,8 +261,9 @@ def get_shaped_neuron_counts(
 
         counts.append(out_feat)
 
-        if (len(counts) != layer_count):
-            print("\nWarning: stairs layer count does not match "
-                  "" + str(layer_count) + " != " + str(len(counts)) + "\n")
+        if len(counts) != layer_count:
+            warnings.warn(
+                "\nWarning: stairs layer count does not match " "" + str(layer_count) + " != " + str(len(counts)) + "\n"
+            )
 
     return counts

@@ -14,10 +14,8 @@ class NoScheduler(BaseLRComponent):
     Performs no scheduling via a LambdaLR with lambda==1.
 
     """
-    def __init__(
-        self,
-        random_state: Optional[np.random.RandomState] = None
-    ):
+
+    def __init__(self, random_state: Optional[np.random.RandomState] = None):
 
         super().__init__()
         self.lr_lambda = lambda epoch: 1
@@ -43,12 +41,11 @@ class NoScheduler(BaseLRComponent):
     @staticmethod
     def get_properties(dataset_properties: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
         return {
-            'shortname': 'NoScheduler',
-            'name': 'No LR Scheduling',
+            "shortname": "NoScheduler",
+            "name": "No LR Scheduling",
         }
 
     @staticmethod
-    def get_hyperparameter_search_space(dataset_properties: Optional[Dict] = None
-                                        ) -> ConfigurationSpace:
+    def get_hyperparameter_search_space(dataset_properties: Optional[Dict] = None) -> ConfigurationSpace:
         cs = ConfigurationSpace()
         return cs

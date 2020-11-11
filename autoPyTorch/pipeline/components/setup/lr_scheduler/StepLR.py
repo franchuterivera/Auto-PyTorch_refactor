@@ -25,12 +25,8 @@ class StepLR(BaseLRComponent):
         gamma (float) – Multiplicative factor of learning rate decay. Default: 0.1.
 
     """
-    def __init__(
-        self,
-        step_size: int,
-        gamma: float,
-        random_state: Optional[np.random.RandomState] = None
-    ):
+
+    def __init__(self, step_size: int, gamma: float, random_state: Optional[np.random.RandomState] = None):
 
         super().__init__()
         self.gamma = gamma
@@ -54,26 +50,21 @@ class StepLR(BaseLRComponent):
         self.check_requirements(X, y)
 
         self.scheduler = torch.optim.lr_scheduler.StepLR(
-            optimizer=X['optimizer'],
-            step_size=int(self.step_size),
-            gamma=float(self.gamma),
+            optimizer=X["optimizer"], step_size=int(self.step_size), gamma=float(self.gamma),
         )
         return self
 
     @staticmethod
     def get_properties(dataset_properties: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
         return {
-            'shortname': 'StepLR',
-            'name': 'StepLR',
+            "shortname": "StepLR",
+            "name": "StepLR",
         }
 
     @staticmethod
-    def get_hyperparameter_search_space(dataset_properties: Optional[Dict] = None
-                                        ) -> ConfigurationSpace:
-        gamma = UniformFloatHyperparameter(
-            "gamma", 0.001, 0.9, default_value=0.1)
-        step_size = UniformIntegerHyperparameter(
-            "step_size", 1, 10, default_value=5)
+    def get_hyperparameter_search_space(dataset_properties: Optional[Dict] = None) -> ConfigurationSpace:
+        gamma = UniformFloatHyperparameter("gamma", 0.001, 0.9, default_value=0.1)
+        step_size = UniformIntegerHyperparameter("step_size", 1, 10, default_value=5)
         cs = ConfigurationSpace()
         cs.add_hyperparameters([gamma, step_size])
         return cs

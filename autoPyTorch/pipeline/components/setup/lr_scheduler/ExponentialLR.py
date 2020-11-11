@@ -1,9 +1,7 @@
 from typing import Any, Dict, Optional
 
 from ConfigSpace.configuration_space import ConfigurationSpace
-from ConfigSpace.hyperparameters import (
-    UniformFloatHyperparameter,
-)
+from ConfigSpace.hyperparameters import UniformFloatHyperparameter
 
 import numpy as np
 
@@ -22,11 +20,8 @@ class ExponentialLR(BaseLRComponent):
         gamma (float): Multiplicative factor of learning rate decay.
 
     """
-    def __init__(
-        self,
-        gamma: float,
-        random_state: Optional[np.random.RandomState] = None
-    ):
+
+    def __init__(self, gamma: float, random_state: Optional[np.random.RandomState] = None):
 
         super().__init__()
         self.gamma = gamma
@@ -48,24 +43,19 @@ class ExponentialLR(BaseLRComponent):
         # Make sure there is an optimizer
         self.check_requirements(X, y)
 
-        self.scheduler = torch.optim.lr_scheduler.ExponentialLR(
-            optimizer=X['optimizer'],
-            gamma=float(self.gamma)
-        )
+        self.scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=X["optimizer"], gamma=float(self.gamma))
         return self
 
     @staticmethod
     def get_properties(dataset_properties: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
         return {
-            'shortname': 'ExponentialLR',
-            'name': 'ExponentialLR',
+            "shortname": "ExponentialLR",
+            "name": "ExponentialLR",
         }
 
     @staticmethod
-    def get_hyperparameter_search_space(dataset_properties: Optional[Dict] = None
-                                        ) -> ConfigurationSpace:
-        gamma = UniformFloatHyperparameter(
-            "gamma", 0.7, 0.9999, default_value=0.9)
+    def get_hyperparameter_search_space(dataset_properties: Optional[Dict] = None) -> ConfigurationSpace:
+        gamma = UniformFloatHyperparameter("gamma", 0.7, 0.9999, default_value=0.9)
         cs = ConfigurationSpace()
         cs.add_hyperparameters([gamma])
         return cs

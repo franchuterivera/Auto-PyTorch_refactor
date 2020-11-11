@@ -13,9 +13,8 @@ class StandardScaler(BaseScaler):
     """
     Standardise numerical columns/features by removing mean and scaling to unit/variance
     """
-    def __init__(self,
-                 random_state: Optional[Union[np.random.RandomState, int]] = None
-                 ):
+
+    def __init__(self, random_state: Optional[Union[np.random.RandomState, int]] = None):
         super().__init__()
         self.random_state = random_state
 
@@ -23,13 +22,13 @@ class StandardScaler(BaseScaler):
 
         self.check_requirements(X, y)
 
-        with_mean, with_std = (False, False) if issparse(X['X_train']) else (True, True)
-        self.preprocessor['numerical'] = SklearnStandardScaler(with_mean=with_mean, with_std=with_std, copy=False)
+        with_mean, with_std = (False, False) if issparse(X["X_train"]) else (True, True)
+        self.preprocessor["numerical"] = SklearnStandardScaler(with_mean=with_mean, with_std=with_std, copy=False)
         return self
 
     @staticmethod
     def get_properties(dataset_properties: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
         return {
-            'shortname': 'StandardScaler',
-            'name': 'Standard Scaler',
+            "shortname": "StandardScaler",
+            "name": "Standard Scaler",
         }

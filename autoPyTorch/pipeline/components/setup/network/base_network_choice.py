@@ -17,9 +17,7 @@ from autoPyTorch.pipeline.components.setup.network.base_network import BaseNetwo
 
 
 directory = os.path.split(__file__)[0]
-_networks = find_components(__package__,
-                            directory,
-                            BaseNetworkComponent)
+_networks = find_components(__package__, directory, BaseNetworkComponent)
 _addons = ThirdPartyComponents(BaseNetworkComponent)
 
 
@@ -28,7 +26,6 @@ def add_network(network: BaseNetworkComponent) -> None:
 
 
 class NetworkChoice(autoPyTorchChoice):
-
     def get_components(self) -> Dict[str, autoPyTorchComponent]:
         """Returns the available network components
 
@@ -45,10 +42,7 @@ class NetworkChoice(autoPyTorchChoice):
         return components
 
     def get_available_components(
-        self,
-        dataset_properties: Optional[Dict[str, str]] = None,
-        include: List[str] = None,
-        exclude: List[str] = None,
+        self, dataset_properties: Optional[Dict[str, str]] = None, include: List[str] = None, exclude: List[str] = None,
     ) -> Dict[str, autoPyTorchComponent]:
         """Filters out components based on user provided
         include/exclude directives, as well as the dataset properties
@@ -69,16 +63,14 @@ class NetworkChoice(autoPyTorchChoice):
             dataset_properties = {}
 
         if include is not None and exclude is not None:
-            raise ValueError(
-                "The argument include and exclude cannot be used together.")
+            raise ValueError("The argument include and exclude cannot be used together.")
 
         available_comp = self.get_components()
 
         if include is not None:
             for incl in include:
                 if incl not in available_comp:
-                    raise ValueError("Trying to include unknown component: "
-                                     "%s" % incl)
+                    raise ValueError("Trying to include unknown component: " "%s" % incl)
 
         components_dict = OrderedDict()
         for name in available_comp:
@@ -90,7 +82,7 @@ class NetworkChoice(autoPyTorchChoice):
             entry = available_comp[name]
 
             # Exclude itself to avoid infinite loop
-            if entry == NetworkChoice or hasattr(entry, 'get_components'):
+            if entry == NetworkChoice or hasattr(entry, "get_components"):
                 continue
 
             # target_type = dataset_properties['target_type']
@@ -127,35 +119,27 @@ class NetworkChoice(autoPyTorchChoice):
 
         # Compile a list of legal preprocessors for this problem
         available_networks = self.get_available_components(
-            dataset_properties=dataset_properties,
-            include=include, exclude=exclude)
+            dataset_properties=dataset_properties, include=include, exclude=exclude
+        )
 
         if len(available_networks) == 0:
             raise ValueError("No Network found")
 
         if default is None:
-            defaults = ['MLPNet',
-                        ]
+            defaults = [
+                "MLPNet",
+            ]
             for default_ in defaults:
                 if default_ in available_networks:
                     default = default_
                     break
 
-        network = CSH.CategoricalHyperparameter(
-            '__choice__',
-            list(available_networks.keys()),
-            default_value=default
-        )
+        network = CSH.CategoricalHyperparameter("__choice__", list(available_networks.keys()), default_value=default)
         cs.add_hyperparameter(network)
         for name in available_networks:
-            network_configuration_space = available_networks[name]. \
-                get_hyperparameter_search_space(dataset_properties)
-            parent_hyperparameter = {'parent': network, 'value': name}
-            cs.add_configuration_space(
-                name,
-                network_configuration_space,
-                parent_hyperparameter=parent_hyperparameter
-            )
+            network_configuration_space = available_networks[name].get_hyperparameter_search_space(dataset_properties)
+            parent_hyperparameter = {"parent": network, "value": name}
+            cs.add_configuration_space(name, network_configuration_space, parent_hyperparameter=parent_hyperparameter)
 
         self.configuration_space_ = cs
         self.dataset_properties_ = dataset_properties

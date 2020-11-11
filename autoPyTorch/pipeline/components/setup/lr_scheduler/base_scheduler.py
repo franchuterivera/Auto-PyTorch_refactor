@@ -25,7 +25,7 @@ class BaseLRComponent(autoPyTorchSetupComponent):
         Returns:
             np.ndarray: Transformed features
         """
-        X.update({'lr_scheduler': self.scheduler})
+        X.update({"lr_scheduler": self.scheduler})
         return X
 
     def get_scheduler(self) -> _LRScheduler:
@@ -52,20 +52,19 @@ class BaseLRComponent(autoPyTorchSetupComponent):
         super().check_requirements(X, y)
 
         # The fit dictionary must have an optimizer, that the LR will wrap
-        if 'optimizer' not in X or not isinstance(X['optimizer'], Optimizer):
-            raise ValueError("To fit a learning rate scheduler, the fit dictionary "
-                             "Must contain a valid optimizer that inherits from "
-                             "torch.optim.Optimizer, yet X only contains {}.".format(
-                                 X
-                             )
-                             )
+        if "optimizer" not in X or not isinstance(X["optimizer"], Optimizer):
+            raise ValueError(
+                "To fit a learning rate scheduler, the fit dictionary "
+                "Must contain a valid optimizer that inherits from "
+                "torch.optim.Optimizer, yet X only contains {}.".format(X)
+            )
 
     def __str__(self) -> str:
         """ Allow a nice understanding of what components where used """
         string = self.scheduler.__class__.__name__
         info = vars(self)
         # Remove unwanted info
-        info.pop('scheduler', None)
-        info.pop('random_state', None)
+        info.pop("scheduler", None)
+        info.pop("random_state", None)
         string += " (" + str(info) + ")"
         return string

@@ -11,6 +11,7 @@ class OrdinalEncoder(BaseEncoder):
     """
     Encode categorical features as a one-hot numerical array
     """
+
     def __init__(self, random_state: Optional[Union[np.random.RandomState, int]] = None):
         super().__init__()
         self.random_state = random_state
@@ -19,12 +20,12 @@ class OrdinalEncoder(BaseEncoder):
 
         self.check_requirements(X, y)
 
-        self.preprocessor['categorical'] = OE(categories=X['categories'])
+        self.preprocessor["categorical"] = OE(categories=X["categories"])
         return self
 
     @staticmethod
     def get_properties(dataset_properties: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
         return {
-            'shortname': 'OrdinalEncoder',
-            'name': 'Ordinal Encoder',
+            "shortname": "OrdinalEncoder",
+            "name": "Ordinal Encoder",
         }

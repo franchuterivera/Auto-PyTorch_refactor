@@ -17,9 +17,7 @@ from autoPyTorch.pipeline.components.setup.lr_scheduler.base_scheduler import Ba
 
 
 directory = os.path.split(__file__)[0]
-_schedulers = find_components(__package__,
-                              directory,
-                              BaseLRComponent)
+_schedulers = find_components(__package__, directory, BaseLRComponent)
 _addons = ThirdPartyComponents(BaseLRComponent)
 
 
@@ -28,7 +26,6 @@ def add_scheduler(scheduler: BaseLRComponent) -> None:
 
 
 class SchedulerChoice(autoPyTorchChoice):
-
     def get_components(self) -> Dict[str, autoPyTorchComponent]:
         """Returns the available scheduler components
 
@@ -45,10 +42,7 @@ class SchedulerChoice(autoPyTorchChoice):
         return components
 
     def get_available_components(
-        self,
-        dataset_properties: Optional[Dict[str, str]] = None,
-        include: List[str] = None,
-        exclude: List[str] = None,
+        self, dataset_properties: Optional[Dict[str, str]] = None, include: List[str] = None, exclude: List[str] = None,
     ) -> Dict[str, autoPyTorchComponent]:
         """Filters out components based on user provided
         include/exclude directives, as well as the dataset properties
@@ -70,16 +64,14 @@ class SchedulerChoice(autoPyTorchChoice):
             dataset_properties = {}
 
         if include is not None and exclude is not None:
-            raise ValueError(
-                "The argument include and exclude cannot be used together.")
+            raise ValueError("The argument include and exclude cannot be used together.")
 
         available_comp = self.get_components()
 
         if include is not None:
             for incl in include:
                 if incl not in available_comp:
-                    raise ValueError("Trying to include unknown component: "
-                                     "%s" % incl)
+                    raise ValueError("Trying to include unknown component: " "%s" % incl)
 
         components_dict = OrderedDict()
         for name in available_comp:
@@ -91,7 +83,7 @@ class SchedulerChoice(autoPyTorchChoice):
             entry = available_comp[name]
 
             # Exclude itself to avoid infinite loop
-            if entry == SchedulerChoice or hasattr(entry, 'get_components'):
+            if entry == SchedulerChoice or hasattr(entry, "get_components"):
                 continue
 
             # target_type = dataset_properties['target_type']
@@ -131,40 +123,36 @@ class SchedulerChoice(autoPyTorchChoice):
 
         # Compile a list of legal preprocessors for this problem
         available_schedulers = self.get_available_components(
-            dataset_properties=dataset_properties,
-            include=include, exclude=exclude)
+            dataset_properties=dataset_properties, include=include, exclude=exclude
+        )
 
         if len(available_schedulers) == 0:
             raise ValueError("No scheduler found")
 
         if default is None:
-            defaults = ['no_LRScheduler',
-                        'LambdaLR',
-                        'StepLR',
-                        'ExponentialLR',
-                        'CosineAnnealingLR',
-                        'ReduceLROnPlateau'
-                        ]
+            defaults = [
+                "no_LRScheduler",
+                "LambdaLR",
+                "StepLR",
+                "ExponentialLR",
+                "CosineAnnealingLR",
+                "ReduceLROnPlateau",
+            ]
             for default_ in defaults:
                 if default_ in available_schedulers:
                     default = default_
                     break
 
         scheduler = CSH.CategoricalHyperparameter(
-            '__choice__',
-            list(available_schedulers.keys()),
-            default_value=default
+            "__choice__", list(available_schedulers.keys()), default_value=default
         )
         cs.add_hyperparameter(scheduler)
         for name in available_schedulers:
-            scheduler_configuration_space = available_schedulers[name]. \
-                get_hyperparameter_search_space(dataset_properties)
-            parent_hyperparameter = {'parent': scheduler, 'value': name}
-            cs.add_configuration_space(
-                name,
-                scheduler_configuration_space,
-                parent_hyperparameter=parent_hyperparameter
+            scheduler_configuration_space = available_schedulers[name].get_hyperparameter_search_space(
+                dataset_properties
             )
+            parent_hyperparameter = {"parent": scheduler, "value": name}
+            cs.add_configuration_space(name, scheduler_configuration_space, parent_hyperparameter=parent_hyperparameter)
 
         self.configuration_space_ = cs
         self.dataset_properties_ = dataset_properties

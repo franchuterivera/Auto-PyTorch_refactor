@@ -4,7 +4,7 @@ from ConfigSpace.configuration_space import ConfigurationSpace
 from ConfigSpace.hyperparameters import (
     CategoricalHyperparameter,
     UniformFloatHyperparameter,
-    UniformIntegerHyperparameter
+    UniformIntegerHyperparameter,
 )
 
 import numpy as np
@@ -31,13 +31,8 @@ class ReduceLROnPlateau(BaseLRComponent):
             rate will be reduced.
         random_state (Optional[np.random.RandomState]): random state
     """
-    def __init__(
-        self,
-        mode: str,
-        factor: float,
-        patience: int,
-        random_state: Optional[np.random.RandomState] = None
-    ):
+
+    def __init__(self, mode: str, factor: float, patience: int, random_state: Optional[np.random.RandomState] = None):
 
         super().__init__()
         self.mode = mode
@@ -62,28 +57,22 @@ class ReduceLROnPlateau(BaseLRComponent):
         self.check_requirements(X, y)
 
         self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer=X['optimizer'],
-            mode=self.mode,
-            factor=float(self.factor),
-            patience=int(self.patience),
+            optimizer=X["optimizer"], mode=self.mode, factor=float(self.factor), patience=int(self.patience),
         )
         return self
 
     @staticmethod
     def get_properties(dataset_properties: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
         return {
-            'shortname': 'ReduceLROnPlateau',
-            'name': 'ReduceLROnPlateau',
+            "shortname": "ReduceLROnPlateau",
+            "name": "ReduceLROnPlateau",
         }
 
     @staticmethod
-    def get_hyperparameter_search_space(dataset_properties: Optional[Dict] = None
-                                        ) -> ConfigurationSpace:
-        mode = CategoricalHyperparameter('mode', ['min', 'max'])
-        patience = UniformIntegerHyperparameter(
-            "patience", 5, 20, default_value=10)
-        factor = UniformFloatHyperparameter(
-            "factor", 0.01, 0.9, default_value=0.1)
+    def get_hyperparameter_search_space(dataset_properties: Optional[Dict] = None) -> ConfigurationSpace:
+        mode = CategoricalHyperparameter("mode", ["min", "max"])
+        patience = UniformIntegerHyperparameter("patience", 5, 20, default_value=10)
+        factor = UniformFloatHyperparameter("factor", 0.01, 0.9, default_value=0.1)
         cs = ConfigurationSpace()
         cs.add_hyperparameters([mode, patience, factor])
         return cs

@@ -31,13 +31,14 @@ class CyclicLR(BaseLRComponent):
             base_lr. This simplifies the learning space
 
     """
+
     def __init__(
         self,
         base_lr: float,
         mode: str,
         step_size_up: int,
         max_lr: float = 0.1,
-        random_state: Optional[np.random.RandomState] = None
+        random_state: Optional[np.random.RandomState] = None,
     ):
 
         super().__init__()
@@ -65,11 +66,11 @@ class CyclicLR(BaseLRComponent):
 
         # No momentum to cycle in adam
         cycle_momentum = True
-        if 'Adam' in X['optimizer'].__class__.__name__:
+        if "Adam" in X["optimizer"].__class__.__name__:
             cycle_momentum = False
 
         self.scheduler = torch.optim.lr_scheduler.CyclicLR(
-            optimizer=X['optimizer'],
+            optimizer=X["optimizer"],
             base_lr=float(self.base_lr),
             max_lr=float(self.max_lr),
             step_size_up=int(self.step_size_up),
@@ -81,20 +82,16 @@ class CyclicLR(BaseLRComponent):
     @staticmethod
     def get_properties(dataset_properties: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
         return {
-            'shortname': 'CyclicLR',
-            'name': 'CyclicLR',
+            "shortname": "CyclicLR",
+            "name": "CyclicLR",
         }
 
     @staticmethod
-    def get_hyperparameter_search_space(dataset_properties: Optional[Dict] = None
-                                        ) -> ConfigurationSpace:
-        base_lr = UniformFloatHyperparameter(
-            "base_lr", 1e-6, 1e-1, default_value=0.01)
-        mode = CategoricalHyperparameter('mode', ['triangular', 'triangular2', 'exp_range'])
-        step_size_up = UniformIntegerHyperparameter(
-            "step_size_up", 1000, 4000, default_value=2000)
-        max_lr = UniformFloatHyperparameter(
-            "max_lr", 1e-3, 1e-1, default_value=0.1)
+    def get_hyperparameter_search_space(dataset_properties: Optional[Dict] = None) -> ConfigurationSpace:
+        base_lr = UniformFloatHyperparameter("base_lr", 1e-6, 1e-1, default_value=0.01)
+        mode = CategoricalHyperparameter("mode", ["triangular", "triangular2", "exp_range"])
+        step_size_up = UniformIntegerHyperparameter("step_size_up", 1000, 4000, default_value=2000)
+        max_lr = UniformFloatHyperparameter("max_lr", 1e-3, 1e-1, default_value=0.1)
         cs = ConfigurationSpace()
         cs.add_hyperparameters([base_lr, mode, step_size_up, max_lr])
         return cs

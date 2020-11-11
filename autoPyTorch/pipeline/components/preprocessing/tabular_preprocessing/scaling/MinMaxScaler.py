@@ -11,9 +11,12 @@ class MinMaxScaler(BaseScaler):
     """
     Scale numerical columns/features into feature_range
     """
-    def __init__(self,
-                 random_state: Optional[Union[np.random.RandomState, int]] = None,
-                 feature_range: Tuple[Union[int, float], Union[int, float]] = (0, 1)):
+
+    def __init__(
+        self,
+        random_state: Optional[Union[np.random.RandomState, int]] = None,
+        feature_range: Tuple[Union[int, float], Union[int, float]] = (0, 1),
+    ):
         super().__init__()
         self.random_state = random_state
         self.feature_range = feature_range
@@ -22,12 +25,12 @@ class MinMaxScaler(BaseScaler):
 
         self.check_requirements(X, y)
 
-        self.preprocessor['numerical'] = SklearnMinMaxScaler(feature_range=self.feature_range, copy=False)
+        self.preprocessor["numerical"] = SklearnMinMaxScaler(feature_range=self.feature_range, copy=False)
         return self
 
     @staticmethod
     def get_properties(dataset_properties: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
         return {
-            'shortname': 'MinMaxScaler',
-            'name': 'MinMaxScaler',
+            "shortname": "MinMaxScaler",
+            "name": "MinMaxScaler",
         }

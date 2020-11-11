@@ -9,9 +9,8 @@ class NoEncoder(BaseEncoder):
     """
     Don't perform encoding on categorical features
     """
-    def __init__(self,
-                 random_state: Optional[Union[np.random.RandomState, int]] = None
-                 ):
+
+    def __init__(self, random_state: Optional[Union[np.random.RandomState, int]] = None):
         super().__init__()
         self.random_state = random_state
 
@@ -39,12 +38,12 @@ class NoEncoder(BaseEncoder):
         Returns:
             (Dict[str, Any]): the updated 'X' dictionary
         """
-        X.update({'encoder': self.preprocessor})
+        X.update({"encoder": self.preprocessor})
         return X
 
     @staticmethod
     def get_properties(dataset_properties: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
         return {
-            'shortname': 'NoEncoder',
-            'name': 'No Encoder',
+            "shortname": "NoEncoder",
+            "name": "No Encoder",
         }

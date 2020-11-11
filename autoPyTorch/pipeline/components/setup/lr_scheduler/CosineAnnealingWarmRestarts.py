@@ -24,12 +24,7 @@ class CosineAnnealingWarmRestarts(BaseLRComponent):
         random_state (Optional[np.random.RandomState]): random state
     """
 
-    def __init__(
-        self,
-        T_0: int,
-        T_mult: int,
-        random_state: Optional[np.random.RandomState] = None
-    ):
+    def __init__(self, T_0: int, T_mult: int, random_state: Optional[np.random.RandomState] = None):
 
         super().__init__()
         self.T_0 = T_0
@@ -53,26 +48,21 @@ class CosineAnnealingWarmRestarts(BaseLRComponent):
         self.check_requirements(X, y)
 
         self.scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
-            optimizer=X['optimizer'],
-            T_0=int(self.T_0),
-            T_mult=int(self.T_mult),
+            optimizer=X["optimizer"], T_0=int(self.T_0), T_mult=int(self.T_mult),
         )
         return self
 
     @staticmethod
     def get_properties(dataset_properties: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
         return {
-            'shortname': 'CosineAnnealingWarmRestarts',
-            'name': 'Cosine Annealing WarmRestarts',
+            "shortname": "CosineAnnealingWarmRestarts",
+            "name": "Cosine Annealing WarmRestarts",
         }
 
     @staticmethod
-    def get_hyperparameter_search_space(dataset_properties: Optional[Dict] = None
-                                        ) -> ConfigurationSpace:
-        T_0 = UniformIntegerHyperparameter(
-            "T_0", 1, 20, default_value=1)
-        T_mult = UniformFloatHyperparameter(
-            "T_mult", 1.0, 2.0, default_value=1.0)
+    def get_hyperparameter_search_space(dataset_properties: Optional[Dict] = None) -> ConfigurationSpace:
+        T_0 = UniformIntegerHyperparameter("T_0", 1, 20, default_value=1)
+        T_mult = UniformFloatHyperparameter("T_mult", 1.0, 2.0, default_value=1.0)
         cs = ConfigurationSpace()
         cs.add_hyperparameters([T_0, T_mult])
         return cs

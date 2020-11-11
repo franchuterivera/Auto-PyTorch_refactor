@@ -15,9 +15,7 @@ from autoPyTorch.pipeline.components.preprocessing.tabular_preprocessing.encodin
 
 
 encoding_directory = os.path.split(__file__)[0]
-_encoders = find_components(__package__,
-                            encoding_directory,
-                            BaseEncoder)
+_encoders = find_components(__package__, encoding_directory, BaseEncoder)
 _addons = ThirdPartyComponents(BaseEncoder)
 
 
@@ -45,11 +43,13 @@ class EncoderChoice(autoPyTorchChoice):
         components.update(_addons.components)
         return components
 
-    def get_hyperparameter_search_space(self,
-                                        dataset_properties: Optional[Dict[str, Any]] = None,
-                                        default: Optional[str] = None,
-                                        include: Optional[List[str]] = None,
-                                        exclude: Optional[List[str]] = None) -> ConfigurationSpace:
+    def get_hyperparameter_search_space(
+        self,
+        dataset_properties: Optional[Dict[str, Any]] = None,
+        default: Optional[str] = None,
+        include: Optional[List[str]] = None,
+        exclude: Optional[List[str]] = None,
+    ) -> ConfigurationSpace:
         cs = ConfigurationSpace()
 
         if dataset_properties is None:
@@ -57,15 +57,15 @@ class EncoderChoice(autoPyTorchChoice):
 
         dataset_properties = {**self.dataset_properties, **dataset_properties}
 
-        available_preprocessors = self.get_available_components(dataset_properties=dataset_properties,
-                                                                include=include,
-                                                                exclude=exclude)
+        available_preprocessors = self.get_available_components(
+            dataset_properties=dataset_properties, include=include, exclude=exclude
+        )
 
         if len(available_preprocessors) == 0:
             raise ValueError("no encoders found, please add a encoder")
 
         if default is None:
-            defaults = ['OneHotEncoder', 'OrdinalEncoder', 'NoEncoder']
+            defaults = ["OneHotEncoder", "OrdinalEncoder", "NoEncoder"]
             for default_ in defaults:
                 if default_ in available_preprocessors:
                     if include is not None and default_ not in include:
@@ -76,25 +76,25 @@ class EncoderChoice(autoPyTorchChoice):
                     break
 
         # add only no encoder to choice hyperparameters in case the dataset is only categorical
-        if not dataset_properties['categorical_columns']:
-            default = 'NoEncoder'
-            preprocessor = CSH.CategoricalHyperparameter('__choice__',
-                                                         ['NoEncoder'],
-                                                         default_value=default)
+        if not dataset_properties["categorical_columns"]:
+            default = "NoEncoder"
+            preprocessor = CSH.CategoricalHyperparameter("__choice__", ["NoEncoder"], default_value=default)
         else:
-            preprocessor = CSH.CategoricalHyperparameter('__choice__',
-                                                         list(available_preprocessors.keys()),
-                                                         default_value=default)
+            preprocessor = CSH.CategoricalHyperparameter(
+                "__choice__", list(available_preprocessors.keys()), default_value=default
+            )
 
         cs.add_hyperparameter(preprocessor)
 
         # add only child hyperparameters of early_preprocessor choices
         for name in preprocessor.choices:
-            preprocessor_configuration_space = available_preprocessors[name].\
-                get_hyperparameter_search_space(dataset_properties)
-            parent_hyperparameter = {'parent': preprocessor, 'value': name}
-            cs.add_configuration_space(name, preprocessor_configuration_space,
-                                       parent_hyperparameter=parent_hyperparameter)
+            preprocessor_configuration_space = available_preprocessors[name].get_hyperparameter_search_space(
+                dataset_properties
+            )
+            parent_hyperparameter = {"parent": preprocessor, "value": name}
+            cs.add_configuration_space(
+                name, preprocessor_configuration_space, parent_hyperparameter=parent_hyperparameter
+            )
 
         self.configuration_space = cs
         self.dataset_properties = dataset_properties
@@ -110,7 +110,9 @@ class EncoderChoice(autoPyTorchChoice):
 
         """
         super()._check_dataset_properties(dataset_properties)
-        assert 'numerical_columns' in dataset_properties.keys(), \
-            "Dataset properties must contain information about numerical columns"
-        assert 'categorical_columns' in dataset_properties.keys(), \
-            "Dataset properties must contain information about categorical columns"
+        assert (
+            "numerical_columns" in dataset_properties.keys()
+        ), "Dataset properties must contain information about numerical columns"
+        assert (
+            "categorical_columns" in dataset_properties.keys()
+        ), "Dataset properties must contain information about categorical columns"

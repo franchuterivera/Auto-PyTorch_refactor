@@ -14,14 +14,12 @@ from autoPyTorch.pipeline.components.base_component import (
     find_components,
 )
 from autoPyTorch.pipeline.components.setup.network_initializer.base_network_initializer import (
-    BaseNetworkInitializerComponent
+    BaseNetworkInitializerComponent,
 )
 
 
 directory = os.path.split(__file__)[0]
-_initializers = find_components(__package__,
-                                directory,
-                                BaseNetworkInitializerComponent)
+_initializers = find_components(__package__, directory, BaseNetworkInitializerComponent)
 _addons = ThirdPartyComponents(BaseNetworkInitializerComponent)
 
 
@@ -30,7 +28,6 @@ def add_network_initializer(initializer: BaseNetworkInitializerComponent) -> Non
 
 
 class NetworkInitializerChoice(autoPyTorchChoice):
-
     def get_components(self) -> Dict[str, autoPyTorchComponent]:
         """Returns the available initializer components
 
@@ -47,10 +44,7 @@ class NetworkInitializerChoice(autoPyTorchChoice):
         return components
 
     def get_available_components(
-        self,
-        dataset_properties: Optional[Dict[str, str]] = None,
-        include: List[str] = None,
-        exclude: List[str] = None,
+        self, dataset_properties: Optional[Dict[str, str]] = None, include: List[str] = None, exclude: List[str] = None,
     ) -> Dict[str, autoPyTorchComponent]:
         """Filters out components based on user provided
         include/exclude directives, as well as the dataset properties
@@ -71,16 +65,14 @@ class NetworkInitializerChoice(autoPyTorchChoice):
             dataset_properties = {}
 
         if include is not None and exclude is not None:
-            raise ValueError(
-                "The argument include and exclude cannot be used together.")
+            raise ValueError("The argument include and exclude cannot be used together.")
 
         available_comp = self.get_components()
 
         if include is not None:
             for incl in include:
                 if incl not in available_comp:
-                    raise ValueError("Trying to include unknown component: "
-                                     "%s" % incl)
+                    raise ValueError("Trying to include unknown component: " "%s" % incl)
 
         components_dict = OrderedDict()
         for name in available_comp:
@@ -92,7 +84,7 @@ class NetworkInitializerChoice(autoPyTorchChoice):
             entry = available_comp[name]
 
             # Exclude itself to avoid infinite loop
-            if entry == NetworkInitializerChoice or hasattr(entry, 'get_components'):
+            if entry == NetworkInitializerChoice or hasattr(entry, "get_components"):
                 continue
 
             # target_type = dataset_properties['target_type']
@@ -129,34 +121,32 @@ class NetworkInitializerChoice(autoPyTorchChoice):
 
         # Compile a list of legal preprocessors for this problem
         available_initializers = self.get_available_components(
-            dataset_properties=dataset_properties,
-            include=include, exclude=exclude)
+            dataset_properties=dataset_properties, include=include, exclude=exclude
+        )
 
         if len(available_initializers) == 0:
             raise ValueError("No initializers found")
 
         if default is None:
-            defaults = ['MLPNet',
-                        ]
+            defaults = [
+                "MLPNet",
+            ]
             for default_ in defaults:
                 if default_ in available_initializers:
                     default = default_
                     break
 
         initializer = CSH.CategoricalHyperparameter(
-            '__choice__',
-            list(available_initializers.keys()),
-            default_value=default
+            "__choice__", list(available_initializers.keys()), default_value=default
         )
         cs.add_hyperparameter(initializer)
         for name in available_initializers:
-            initializer_configuration_space = available_initializers[name]. \
-                get_hyperparameter_search_space(dataset_properties)
-            parent_hyperparameter = {'parent': initializer, 'value': name}
+            initializer_configuration_space = available_initializers[name].get_hyperparameter_search_space(
+                dataset_properties
+            )
+            parent_hyperparameter = {"parent": initializer, "value": name}
             cs.add_configuration_space(
-                name,
-                initializer_configuration_space,
-                parent_hyperparameter=parent_hyperparameter
+                name, initializer_configuration_space, parent_hyperparameter=parent_hyperparameter
             )
 
         self.configuration_space_ = cs

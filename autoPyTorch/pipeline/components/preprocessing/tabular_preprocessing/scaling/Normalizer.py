@@ -1,9 +1,7 @@
 from typing import Any, Dict, Optional, Union
 
 from ConfigSpace.configuration_space import ConfigurationSpace
-from ConfigSpace.hyperparameters import (
-    CategoricalHyperparameter
-)
+from ConfigSpace.hyperparameters import CategoricalHyperparameter
 
 import numpy as np
 
@@ -17,7 +15,7 @@ class Normalizer(BaseScaler):
     Normalises samples individually according to norm {mean_abs, mean_squared, max}
     """
 
-    def __init__(self, random_state: Optional[Union[np.random.RandomState, int]] = None, norm: str = 'mean_squared'):
+    def __init__(self, random_state: Optional[Union[np.random.RandomState, int]] = None, norm: str = "mean_squared"):
         """
         Args:
             random_state (Optional[Union[np.random.RandomState, int]]): Determines random number generation for
@@ -33,7 +31,7 @@ class Normalizer(BaseScaler):
         self.check_requirements(X, y)
 
         map_norm = dict({"mean_abs": "l1", "mean_squared": "l2", "max": "max"})
-        self.preprocessor['numerical'] = SklearnNormalizer(norm=map_norm[self.norm], copy=False)
+        self.preprocessor["numerical"] = SklearnNormalizer(norm=map_norm[self.norm], copy=False)
         return self
 
     @staticmethod
@@ -46,6 +44,6 @@ class Normalizer(BaseScaler):
     @staticmethod
     def get_properties(dataset_properties: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
         return {
-            'shortname': 'Normalizer',
-            'name': 'Normalizer',
+            "shortname": "Normalizer",
+            "name": "Normalizer",
         }

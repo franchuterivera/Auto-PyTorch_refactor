@@ -23,7 +23,7 @@ class BaseOptimizerComponent(autoPyTorchSetupComponent):
         Returns:
             np.ndarray: Transformed features
         """
-        X.update({'optimizer': self.optimizer})
+        X.update({"optimizer": self.optimizer})
         return X
 
     def get_optimizer(self) -> Optimizer:
@@ -44,20 +44,19 @@ class BaseOptimizerComponent(autoPyTorchSetupComponent):
         super().check_requirements(X, y)
 
         # For the optimizer, we need the network to wrap
-        if 'network' not in X or not isinstance(X['network'], torch.nn.Module):
-            raise ValueError("Could not parse the network in the fit dictionary "
-                             "To fit a optimizer, the network is needed to define "
-                             "which parameters to wrap, yet the dict contains only: {}".format(
-                                 X
-                             )
-                             )
+        if "network" not in X or not isinstance(X["network"], torch.nn.Module):
+            raise ValueError(
+                "Could not parse the network in the fit dictionary "
+                "To fit a optimizer, the network is needed to define "
+                "which parameters to wrap, yet the dict contains only: {}".format(X)
+            )
 
     def __str__(self) -> str:
         """ Allow a nice understanding of what components where used """
         string = self.optimizer.__class__.__name__
         info = vars(self)
         # Remove unwanted info
-        info.pop('optimizer', None)
-        info.pop('random_state', None)
+        info.pop("optimizer", None)
+        info.pop("random_state", None)
         string += " (" + str(info) + ")"
         return string

@@ -2,9 +2,7 @@ from abc import abstractmethod
 from typing import Any, Callable, Dict, Optional
 
 from ConfigSpace.configuration_space import ConfigurationSpace
-from ConfigSpace.hyperparameters import (
-    CategoricalHyperparameter,
-)
+from ConfigSpace.hyperparameters import CategoricalHyperparameter
 
 import numpy as np
 
@@ -18,11 +16,7 @@ class BaseNetworkInitializerComponent(autoPyTorchSetupComponent):
     strategies in Auto-Pytorch
     """
 
-    def __init__(
-        self,
-        bias_strategy: str,
-        random_state: Optional[np.random.RandomState] = None,
-    ) -> None:
+    def __init__(self, bias_strategy: str, random_state: Optional[np.random.RandomState] = None,) -> None:
         self.bias_strategy = bias_strategy
         self.random_state = random_state
 
@@ -41,7 +35,7 @@ class BaseNetworkInitializerComponent(autoPyTorchSetupComponent):
         # information to fit this stage
         self.check_requirements(X, y)
 
-        X['network'].apply(self.weights_init())
+        X["network"].apply(self.weights_init())
 
         return self
 
@@ -77,28 +71,27 @@ class BaseNetworkInitializerComponent(autoPyTorchSetupComponent):
         super().check_requirements(X, y)
 
         # To initialize weights, we need the network
-        if 'network' not in X or not isinstance(X['network'], torch.nn.Module):
-            raise ValueError("Could not parse the network in the fit dictionary "
-                             "To initialize the weights of the network, we need the same "
-                             "in the fit dictionary, yet the dict contains only: {}".format(
-                                 X
-                             )
-                             )
+        if "network" not in X or not isinstance(X["network"], torch.nn.Module):
+            raise ValueError(
+                "Could not parse the network in the fit dictionary "
+                "To initialize the weights of the network, we need the same "
+                "in the fit dictionary, yet the dict contains only: {}".format(X)
+            )
 
     @staticmethod
-    def get_hyperparameter_search_space(dataset_properties: Optional[Dict] = None,
-                                        min_mlp_layers: int = 1,
-                                        max_mlp_layers: int = 15,
-                                        dropout: bool = True,
-                                        min_num_units: int = 10,
-                                        max_num_units: int = 1024,
-                                        ) -> ConfigurationSpace:
+    def get_hyperparameter_search_space(
+        dataset_properties: Optional[Dict] = None,
+        min_mlp_layers: int = 1,
+        max_mlp_layers: int = 15,
+        dropout: bool = True,
+        min_num_units: int = 10,
+        max_num_units: int = 1024,
+    ) -> ConfigurationSpace:
 
         cs = ConfigurationSpace()
 
         # The strategy for bias initializations
-        bias_strategy = CategoricalHyperparameter(
-            "bias_strategy", choices=['Zero', 'Normal'])
+        bias_strategy = CategoricalHyperparameter("bias_strategy", choices=["Zero", "Normal"])
         cs.add_hyperparameters([bias_strategy])
         return cs
 
@@ -107,7 +100,7 @@ class BaseNetworkInitializerComponent(autoPyTorchSetupComponent):
         string = self.__class__.__name__
         info = vars(self)
         # Remove unwanted info
-        info.pop('strategy', None)
-        info.pop('random_state', None)
+        info.pop("strategy", None)
+        info.pop("random_state", None)
         string += " (" + str(info) + ")"
         return string

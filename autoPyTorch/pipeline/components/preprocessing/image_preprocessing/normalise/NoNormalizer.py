@@ -4,15 +4,11 @@ import numpy as np
 
 import torch.tensor
 
-from autoPyTorch.pipeline.components.preprocessing.image_preprocessing.normalise.base_normalizer import (
-    BaseNormalizer
-
-)
+from autoPyTorch.pipeline.components.preprocessing.image_preprocessing.normalise.base_normalizer import BaseNormalizer
 
 
 class NoNormalizer(BaseNormalizer):
-    def __init__(self, random_state: Optional[Union[np.random.RandomState, int]] = None
-                 ):
+    def __init__(self, random_state: Optional[Union[np.random.RandomState, int]] = None):
         self.random_state = random_state
 
     def fit(self, X: Dict[str, Any], y: Optional[Any] = None) -> "NoNormalizer":
@@ -30,7 +26,7 @@ class NoNormalizer(BaseNormalizer):
 
     def transform(self, X: Dict[str, Any]) -> Dict[str, Any]:
 
-        X.update({'normalise': self})
+        X.update({"normalise": self})
         return X
 
     def __call__(self, X: Union[np.ndarray, torch.tensor]) -> Union[np.ndarray, torch.tensor]:
@@ -47,9 +43,8 @@ class NoNormalizer(BaseNormalizer):
         return X
 
     @staticmethod
-    def get_properties(dataset_properties: Optional[Dict[str, str]] = None
-                       ) -> Dict[str, Any]:
+    def get_properties(dataset_properties: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         return {
-            'shortname': 'no-normalize',
-            'name': 'No Normalizer Node',
+            "shortname": "no-normalize",
+            "name": "No Normalizer Node",
         }

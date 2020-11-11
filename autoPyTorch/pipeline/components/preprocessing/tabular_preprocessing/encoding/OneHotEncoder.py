@@ -11,6 +11,7 @@ class OneHotEncoder(BaseEncoder):
     """
     Encode categorical features as a one-hot numerical array
     """
+
     def __init__(self, random_state: Optional[Union[np.random.RandomState, int]] = None):
         super().__init__()
         self.random_state = random_state
@@ -19,12 +20,12 @@ class OneHotEncoder(BaseEncoder):
 
         self.check_requirements(X, y)
 
-        self.preprocessor['categorical'] = OHE(categories=X['categories'], sparse=False, handle_unknown='error')
+        self.preprocessor["categorical"] = OHE(categories=X["categories"], sparse=False, handle_unknown="error")
         return self
 
     @staticmethod
     def get_properties(dataset_properties: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
         return {
-            'shortname': 'OneHotEncoder',
-            'name': 'One Hot Encoder',
+            "shortname": "OneHotEncoder",
+            "name": "One Hot Encoder",
         }

@@ -8,9 +8,7 @@ from autoPyTorch.pipeline.components.preprocessing.image_preprocessing.normalise
 
 
 class ImageNormalizer(BaseNormalizer):
-
-    def __init__(self, random_state: Optional[Union[np.random.RandomState, int]] = None
-                 ):
+    def __init__(self, random_state: Optional[Union[np.random.RandomState, int]] = None):
         self.random_state = random_state
         self.mean = None  # type: Optional[np.ndarray]
         self.std = None  # type: Optional[np.ndarray]
@@ -25,8 +23,8 @@ class ImageNormalizer(BaseNormalizer):
             autoPyTorchImagePreprocessingComponent: self
         """
         self.check_requirements(X, y)
-        self.mean = X['channelwise_mean']
-        self.std = X['channelwise_std']
+        self.mean = X["channelwise_mean"]
+        self.std = X["channelwise_std"]
         return self
 
     def __call__(self, X: Union[np.ndarray, torch.tensor]) -> Union[np.ndarray, torch.tensor]:
@@ -44,9 +42,8 @@ class ImageNormalizer(BaseNormalizer):
         return X
 
     @staticmethod
-    def get_properties(dataset_properties: Optional[Dict[str, str]] = None
-                       ) -> Dict[str, Any]:
+    def get_properties(dataset_properties: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         return {
-            'shortname': 'normalize',
-            'name': 'Image Normalizer Node',
+            "shortname": "normalize",
+            "name": "Image Normalizer Node",
         }

@@ -4,7 +4,7 @@ with open("README.md", "r") as f:
     long_description = f.read()
 
 requirements = []
-with open('requirements.txt', 'r') as f:
+with open("requirements.txt", "r") as f:
     for line in f:
         requirements.append(line.strip())
 
@@ -20,7 +20,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     license="3-clause BSD",
     keywords="machine learning algorithm configuration hyperparameter"
-             "optimization tuning neural architecture deep learning",
+    "optimization tuning neural architecture deep learning",
     packages=setuptools.find_packages(),
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -30,8 +30,8 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: BSD License",
     ],
-    python_requires='>=3',
-    platforms=['Linux'],
+    python_requires=">=3",
+    platforms=["Linux"],
     install_requires=requirements,
     include_package_data=True,
 )

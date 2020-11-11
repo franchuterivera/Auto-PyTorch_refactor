@@ -24,10 +24,8 @@ class autoPyTorchChoice(object):
             results by setting a seed for randomized settings
         choice (autoPyTorchComponent): the choice of components for this stage
     """
-    def __init__(self,
-                 dataset_properties: Dict[str, Any],
-                 random_state: Optional[np.random.RandomState] = None
-                 ):
+
+    def __init__(self, dataset_properties: Dict[str, Any], random_state: Optional[np.random.RandomState] = None):
 
         # Since all calls to get_hyperparameter_search_space will be done by the
         # pipeline on construction, it is not necessary to construct a
@@ -47,7 +45,7 @@ class autoPyTorchChoice(object):
         # self.set_hyperparameters(self.configuration)
         self.choice = None
 
-    def get_components(cls: 'autoPyTorchChoice') -> Dict[str, autoPyTorchComponent]:
+    def get_components(cls: "autoPyTorchChoice") -> Dict[str, autoPyTorchComponent]:
         """Returns and ordered dict with the components available
         for current step.
 
@@ -87,16 +85,14 @@ class autoPyTorchChoice(object):
             dataset_properties = {}
 
         if include is not None and exclude is not None:
-            raise ValueError(
-                "The argument include and exclude cannot be used together.")
+            raise ValueError("The argument include and exclude cannot be used together.")
 
         available_comp = self.get_components()
 
         if include is not None:
             for incl in include:
                 if incl not in available_comp:
-                    raise ValueError("Trying to include unknown component: "
-                                     "%s" % incl)
+                    raise ValueError("Trying to include unknown component: " "%s" % incl)
 
         components_dict = OrderedDict()
         for name in available_comp:
@@ -109,10 +105,9 @@ class autoPyTorchChoice(object):
 
         return components_dict
 
-    def set_hyperparameters(self,
-                            configuration: Configuration,
-                            init_params: Optional[Dict[str, Any]] = None
-                            ) -> 'autoPyTorchChoice':
+    def set_hyperparameters(
+        self, configuration: Configuration, init_params: Optional[Dict[str, Any]] = None
+    ) -> "autoPyTorchChoice":
         """
         Applies a configuration to the given component.
         This method translate a hierarchical configuration key,
@@ -130,19 +125,19 @@ class autoPyTorchChoice(object):
         new_params = {}
 
         params = configuration.get_dictionary()
-        choice = params['__choice__']
-        del params['__choice__']
+        choice = params["__choice__"]
+        del params["__choice__"]
 
         for param, value in params.items():
-            param = param.replace(choice, '').replace(':', '')
+            param = param.replace(choice, "").replace(":", "")
             new_params[param] = value
 
         if init_params is not None:
             for param, value in init_params.items():
-                param = param.replace(choice, '').replace(':', '')
+                param = param.replace(choice, "").replace(":", "")
                 new_params[param] = value
 
-        new_params['random_state'] = self.random_state
+        new_params["random_state"] = self.random_state
 
         self.new_params = new_params
         self.choice = self.get_components()[choice](**new_params)

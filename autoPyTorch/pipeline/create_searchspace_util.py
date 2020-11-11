@@ -1,5 +1,5 @@
 import itertools
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from ConfigSpace.configuration_space import ConfigurationSpace
 from ConfigSpace.forbidden import ForbiddenAndConjunction
@@ -15,7 +15,7 @@ def get_match_array(
     pipeline: List[Tuple[str, autoPyTorchChoice]],
     dataset_properties: Dict[str, Any],
     include: Optional[Dict[str, Any]] = None,
-    exclude: Optional[Dict[str, Any]] = None
+    exclude: Optional[Dict[str, Any]] = None,
 ) -> np.ndarray:
 
     # Duck typing, not sure if it's good...
@@ -28,18 +28,22 @@ def get_match_array(
         is_choice = hasattr(node, "get_available_components")
         node_i_is_choice.append(is_choice)
 
-        node_include = include.get(
-            node_name) if include is not None else None
-        node_exclude = exclude.get(
-            node_name) if exclude is not None else None
+        node_include = include.get(node_name) if include is not None else None
+        node_exclude = exclude.get(node_name) if exclude is not None else None
 
         if is_choice:
-            node_i_choices_names.append(list(node.get_available_components(
-                dataset_properties, include=node_include,
-                exclude=node_exclude).keys()))
-            node_i_choices.append(list(node.get_available_components(
-                dataset_properties, include=node_include,
-                exclude=node_exclude).values()))
+            node_i_choices_names.append(
+                list(
+                    node.get_available_components(dataset_properties, include=node_include, exclude=node_exclude).keys()
+                )
+            )
+            node_i_choices.append(
+                list(
+                    node.get_available_components(
+                        dataset_properties, include=node_include, exclude=node_exclude
+                    ).values()
+                )
+            )
 
         else:
             node_i_choices.append([node])
@@ -60,20 +64,16 @@ def find_active_choices(
     node_idx: int,
     dataset_properties: Dict[str, Any],
     include: Optional[List[str]] = None,
-    exclude: Optional[List[str]] = None
+    exclude: Optional[List[str]] = None,
 ) -> List[str]:
     if not hasattr(node, "get_available_components"):
         raise ValueError()
-    available_components = node.get_available_components(dataset_properties,
-                                                         include=include,
-                                                         exclude=exclude)
-    assert matches.shape[node_idx] == len(available_components), \
-        (matches.shape[node_idx], len(available_components))
+    available_components = node.get_available_components(dataset_properties, include=include, exclude=exclude)
+    assert matches.shape[node_idx] == len(available_components), (matches.shape[node_idx], len(available_components))
 
     choices = []
     for c_idx, component in enumerate(available_components):
-        slices = tuple(slice(None) if idx != node_idx else slice(c_idx, c_idx + 1)
-                       for idx in range(len(matches.shape)))
+        slices = tuple(slice(None) if idx != node_idx else slice(c_idx, c_idx + 1) for idx in range(len(matches.shape)))
 
         if np.sum(matches[slices]) > 0:
             choices.append(component)
@@ -86,7 +86,7 @@ def add_forbidden(
     matches: np.ndarray,
     dataset_properties: Dict[str, Any],
     include: Optional[Dict[str, Any]] = None,
-    exclude: Optional[Dict[str, Any]] = None
+    exclude: Optional[Dict[str, Any]] = None,
 ) -> ConfigurationSpace:
     # Not sure if this works for 3D
     node_i_is_choice = []
@@ -98,24 +98,25 @@ def add_forbidden(
         is_choice = hasattr(node, "get_available_components")
         node_i_is_choice.append(is_choice)
 
-        node_include = include.get(
-            node_name) if include is not None else None
-        node_exclude = exclude.get(
-            node_name) if exclude is not None else None
+        node_include = include.get(node_name) if include is not None else None
+        node_exclude = exclude.get(node_name) if exclude is not None else None
 
         if is_choice:
             node_i_choices_names.append(
-                [str(element) for element in
-                    node.get_available_components(
-                    dataset_properties, include=node_include,
-                    exclude=node_exclude).keys()]
-
+                [
+                    str(element)
+                    for element in node.get_available_components(
+                        dataset_properties, include=node_include, exclude=node_exclude
+                    ).keys()
+                ]
             )
             node_i_choices.append(
-                list(node.get_available_components(
-                    dataset_properties, include=node_include,
-                    exclude=node_exclude
-                ).values()))
+                list(
+                    node.get_available_components(
+                        dataset_properties, include=node_include, exclude=node_exclude
+                    ).values()
+                )
+            )
 
         else:
             node_i_choices_names.append([node_name])
@@ -136,7 +137,7 @@ def add_forbidden(
         idx += 1
 
     for choices_chain in choices_chains:
-        constraints = set()
+        constraints = set()  # type: Set[Tuple]
 
         chain_start = choices_chain[0]
         chain_stop = choices_chain[1]
@@ -155,8 +156,8 @@ def add_forbidden(
                 for idx in indices:
                     node = all_nodes[idx]
                     available_components = node.get_available_components(
-                        dataset_properties,
-                        include=node_i_choices_names[idx])
+                        dataset_properties, include=node_i_choices_names[idx]
+                    )
                     assert len(available_components) > 0, len(available_components)
                     skip_array_shape.append(len(available_components))
                     num_node_choices.append(range(len(available_components)))
@@ -168,9 +169,9 @@ def add_forbidden(
                     for node_idx, choice_idx in enumerate(product):
                         node_idx += start_idx
                         slices_ = tuple(
-                            slice(None) if idx != node_idx else
-                            slice(choice_idx, choice_idx + 1) for idx in
-                            range(len(matches.shape)))
+                            slice(None) if idx != node_idx else slice(choice_idx, choice_idx + 1)
+                            for idx in range(len(matches.shape))
+                        )
 
                         if np.sum(matches[slices_]) == 0:
                             skip_array[product] = 1
@@ -180,10 +181,11 @@ def add_forbidden(
                         continue
 
                     slices = tuple(
-                        slice(None) if idx not in indices else
-                        slice(product[idx - start_idx],
-                              product[idx - start_idx] + 1) for idx in
-                        range(len(matches.shape)))
+                        slice(None)
+                        if idx not in indices
+                        else slice(product[idx - start_idx], product[idx - start_idx] + 1)
+                        for idx in range(len(matches.shape))
+                    )
 
                     # This prints the affected nodes
                     # print [node_choice_names[i][product[i]]
@@ -191,9 +193,9 @@ def add_forbidden(
                     #     np.sum(matches[slices])
 
                     if np.sum(matches[slices]) == 0:
-                        constraint = tuple([(node_names[i],
-                                             node_choice_names[i][product[i]])
-                                            for i in range(len(product))])
+                        constraint = tuple(
+                            [(node_names[i], node_choice_names[i][product[i]]) for i in range(len(product))]
+                        )
 
                         # Check if a more general constraint/forbidden clause
                         #  was already added
@@ -216,9 +218,11 @@ def add_forbidden(
                         forbiddens = []
                         for i in range(len(product)):
                             forbiddens.append(
-                                ForbiddenEqualsClause(conf_space.get_hyperparameter(
-                                    node_names[i] + ":__choice__"),
-                                    node_choice_names[i][product[i]]))
+                                ForbiddenEqualsClause(
+                                    conf_space.get_hyperparameter(node_names[i] + ":__choice__"),
+                                    node_choice_names[i][product[i]],
+                                )
+                            )
                         forbidden = ForbiddenAndConjunction(*forbiddens)
                         conf_space.add_forbidden_clause(forbidden)
 
