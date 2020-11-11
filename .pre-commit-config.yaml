@@ -9,10 +9,10 @@ repos:
     hooks:
       - id: mypy
         name: mypy AutoPyTorch
-        files: autoPyTorch/*
+        files: autoPyTorch
       - id: mypy
         name: mypy tests
-        files: tests/*
+        files: tests
   - repo: https://gitlab.com/pycqa/flake8
     rev: 3.8.3
     hooks:
