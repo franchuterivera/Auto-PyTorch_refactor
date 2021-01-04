@@ -152,6 +152,7 @@ class AbstractEvaluator(object):
                  metric: autoPyTorchMetric,
                  budget: float,
                  budget_type: str = None,
+                 pipeline_config: Optional[Dict[str, Any]] = None,
                  configuration: Optional[Configuration] = None,
                  seed: int = 1,
                  output_y_hat_optimization: bool = True,
@@ -249,14 +250,13 @@ class AbstractEvaluator(object):
             'X_test': self.X_test,
             'y_test': self.y_test,
             'backend': self.backend,
-            'logger_port': logger_port
+            'logger_port': logger_port,
         })
-
-        default_pipeline_options = self.pipeline_class.get_default_pipeline_options()
-
-        self.budget_type = default_pipeline_options['budget_type'] if budget_type is None else budget_type
-        self.budget = default_pipeline_options[self.budget_type] if budget == 0 else budget
-        self.fit_dictionary = {**default_pipeline_options, **self.fit_dictionary}
+        pipeline_config = pipeline_config if pipeline_config is not None\
+            else self.pipeline_class.get_default_pipeline_options()
+        self.budget_type = pipeline_config['budget_type'] if budget_type is None else budget_type
+        self.budget = pipeline_config[self.budget_type] if budget == 0 else budget
+        self.fit_dictionary = {**pipeline_config, **self.fit_dictionary}
 
         self.num_run = 0 if num_run is None else num_run
 
@@ -264,13 +264,15 @@ class AbstractEvaluator(object):
                                   self.seed)  # TODO: Add name to dataset class
         if logger_port is None:
             logger_port = logging.handlers.DEFAULT_TCP_LOGGING_PORT
-        self.logger = get_named_client_logger(output_dir=self.backend.temporary_directory, name=logger_name,
-                                              port=logger_port)
+        self.logger = get_named_client_logger(
+            name=logger_name,
+            port=logger_port,
+        )
         self.Y_optimization: Optional[np.ndarray] = None
         self.Y_actual_train: Optional[np.ndarray] = None
         self.pipelines: Optional[List[BaseEstimator]] = None
         self.pipeline: Optional[BaseEstimator] = None
-        self.logger.debug("Fit dictionary in Abtract evaluator: {}".format(self.fit_dictionary))
+        self.logger.debug("Fit dictionary in Abstract evaluator: {}".format(self.fit_dictionary))
 
     def _get_pipeline(self) -> BaseEstimator:
         assert self.pipeline_class is not None, "Can't return pipeline, pipeline_class not initialised"

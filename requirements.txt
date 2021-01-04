@@ -16,3 +16,4 @@ pyrfr>=0.7,<0.9
 smac>=0.13.1,<0.14
 dask
 distributed>=2.2.0
+

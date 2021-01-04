@@ -15,12 +15,16 @@ from smac.runhistory.runhistory2epm import RunHistory2EPM4LogCost
 from smac.scenario.scenario import Scenario
 from smac.tae.dask_runner import DaskParallelRunner
 from smac.tae.serial_runner import SerialRunner
-from smac.utils.io.traj_logging import TrajLogger
+from smac.utils.io.traj_logging import TrajEntry
 
 # TODO: Enable when merged Ensemble
 # from autoPyTorch.ensemble.ensemble_builder import EnsembleBuilderManager
 from autoPyTorch.datasets.base_dataset import BaseDataset
-from autoPyTorch.datasets.resampling_strategy import CrossValTypes
+from autoPyTorch.datasets.resampling_strategy import (
+    CrossValTypes,
+    DEFAULT_RESAMPLING_PARAMETERS,
+    HoldoutValTypes,
+)
 from autoPyTorch.evaluation.tae import ExecuteTaFuncWithQueue, get_cost_of_crash
 from autoPyTorch.pipeline.components.training.metrics.base import autoPyTorchMetric
 from autoPyTorch.utils.backend import Backend
@@ -86,20 +90,21 @@ class AutoMLSMBO(object):
                  watcher: StopWatch,
                  n_jobs: int,
                  dask_client: typing.Optional[dask.distributed.Client],
+                 pipeline_config: typing.Optional[typing.Dict[str, typing.Any]] = None,
                  start_num_run: int = 1,
                  seed: int = 1,
-                 resampling_strategy: str = 'holdout',
+                 resampling_strategy: typing.Union[HoldoutValTypes, CrossValTypes] = HoldoutValTypes.holdout_validation,
                  resampling_strategy_args: typing.Optional[typing.Dict[str, typing.Any]] = None,
                  include: typing.Optional[typing.Dict[str, typing.Any]] = None,
                  exclude: typing.Optional[typing.Dict[str, typing.Any]] = None,
-                 disable_file_output: bool = False,
+                 disable_file_output: typing.List = [],
                  smac_scenario_args: typing.Optional[typing.Dict[str, typing.Any]] = None,
                  get_smac_object_callback: typing.Optional[typing.Callable] = None,
                  all_supported_metrics: bool = True,
                  # TODO: Re-enable when ensemble merged
                  # ensemble_callback: typing.Optional[EnsembleBuilderManager] = None,
                  ensemble_callback: typing.Any = None,
-                 logger_port: typing.Optional[int] = None
+                 logger_port: typing.Optional[int] = None,
                  ):
         """
         Interface to SMAC. This method calls the SMAC optimize method, and allows
@@ -140,7 +145,7 @@ class AutoMLSMBO(object):
                 Optimal Configuration space modifiers
             exclude (typing.Optional[typing.Dict[str, typing.Any]] = None):
                 Optimal Configuration space modifiers
-            disable_file_output bool = False:
+            disable_file_output List:
                 Support to disable file output to disk -- to reduce space
             smac_scenario_args (typing.Optional[typing.Dict[str, typing.Any]]):
                 Additional arguments to the smac scenario
@@ -159,6 +164,7 @@ class AutoMLSMBO(object):
         self.backend = backend
         self.all_supported_metrics = all_supported_metrics
 
+        self.pipeline_config = pipeline_config
         # the configuration space
         self.config_space = config_space
 
@@ -169,7 +175,7 @@ class AutoMLSMBO(object):
         # Evaluation
         self.resampling_strategy = resampling_strategy
         if resampling_strategy_args is None:
-            resampling_strategy_args = {}
+            resampling_strategy_args = DEFAULT_RESAMPLING_PARAMETERS[resampling_strategy]
         self.resampling_strategy_args = resampling_strategy_args
 
         # and a bunch of useful limits
@@ -194,7 +200,7 @@ class AutoMLSMBO(object):
         else:
             self.logger_port = logger_port
         logger_name = '%s(%d):%s' % (self.__class__.__name__, self.seed, ":" + dataset_name_)
-        self.logger = get_named_client_logger(output_dir=backend.temporary_directory, name=logger_name,
+        self.logger = get_named_client_logger(name=logger_name,
                                               port=self.logger_port)
         self.logger.info("initialised {}".format(self.__class__.__name__))
 
@@ -210,7 +216,7 @@ class AutoMLSMBO(object):
             self.task = self.datamanager.task_type
 
     def run_smbo(self, func: typing.Optional[typing.Callable] = None
-                 ) -> typing.Tuple[RunHistory, TrajLogger, str]:
+                 ) -> typing.Tuple[RunHistory, typing.List[TrajEntry], str]:
 
         self.watcher.start_task('SMBO')
         self.logger.info("Started run of SMBO")
@@ -251,6 +257,7 @@ class AutoMLSMBO(object):
             ta=func,
             logger_port=self.logger_port,
             all_supported_metrics=self.all_supported_metrics,
+            pipeline_config=self.pipeline_config
         )
         ta = ExecuteTaFuncWithQueue
         self.logger.info("Created TA")

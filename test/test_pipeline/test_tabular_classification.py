@@ -1,7 +1,5 @@
 import numpy as np
 
-import pandas as pd
-
 import pytest
 
 from autoPyTorch.pipeline.components.setup.early_preprocessor.utils import get_preprocess_transforms
@@ -44,21 +42,18 @@ class TestTabularClassification:
         config = cs.sample_configuration()
         pipeline.set_hyperparameters(config)
 
-        X_train = np.copy(fit_dictionary['X_train'])
         pipeline.fit(fit_dictionary)
 
         prediction = pipeline.predict(
-            pd.DataFrame(X_train).infer_objects().convert_dtypes())
+            fit_dictionary['backend'].load_datamanager().test_tensors[0])
         assert isinstance(prediction, np.ndarray)
-        assert prediction.shape == (200, 200)
+        assert prediction.shape == (200, 2)
 
     def test_pipeline_predict_proba(self, fit_dictionary):
         """This test makes sure that the pipeline is able to fit
         given random combinations of hyperparameters across the pipeline
         And then predict using predict probability
         """
-        if len(fit_dictionary['dataset_properties']['categorical_columns']) <= 0:
-            pytest.skip("Numerical only predict probabilities is not yet supported")
         pipeline = TabularClassificationPipeline(
             dataset_properties=fit_dictionary['dataset_properties'])
 
@@ -66,11 +61,10 @@ class TestTabularClassification:
         config = cs.sample_configuration()
         pipeline.set_hyperparameters(config)
 
-        X_train = np.copy(fit_dictionary['X_train'])
         pipeline.fit(fit_dictionary)
 
         prediction = pipeline.predict_proba(
-            pd.DataFrame(X_train).infer_objects().convert_dtypes())
+            fit_dictionary['backend'].load_datamanager().test_tensors[0])
         assert isinstance(prediction, np.ndarray)
         assert prediction.shape == (200, 2)
 

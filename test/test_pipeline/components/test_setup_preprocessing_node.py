@@ -13,12 +13,13 @@ from autoPyTorch.constants import (
 )
 from autoPyTorch.pipeline.image_classification import ImageClassificationPipeline
 from autoPyTorch.pipeline.tabular_classification import TabularClassificationPipeline
+from autoPyTorch.utils.backend import Backend
 
 
 class TabularPreprocessingTest(unittest.TestCase):
     def setUp(self):
         # Setup the backed for this test
-        self.backend = mock.Mock()
+        self.backend = mock.Mock(spec=Backend)
         dataset = mock.MagicMock()
         dataset.__len__.return_value = 1
         datamanager = mock.MagicMock()
@@ -34,9 +35,10 @@ class TabularPreprocessingTest(unittest.TestCase):
             'task_type': TASK_TYPES_TO_STRING[TABULAR_CLASSIFICATION],
             'output_type': OUTPUT_TYPES_TO_STRING[MULTICLASS],
             'is_small_preprocess': True,
-            'num_features': 15,
+            'input_shape': (15,),
             'num_classes': 2,
             'categories': [],
+            'issparse': False
         }
         X = dict(X_train=np.random.random((10, 15)),
                  y_train=np.random.random(10),
@@ -69,9 +71,10 @@ class TabularPreprocessingTest(unittest.TestCase):
             'task_type': TASK_TYPES_TO_STRING[TABULAR_CLASSIFICATION],
             'output_type': OUTPUT_TYPES_TO_STRING[MULTICLASS],
             'is_small_preprocess': False,
-            'num_features': 15,
+            'input_shape': (15,),
             'num_classes': 2,
             'categories': [],
+            'issparse': False
         }
         X = dict(X_train=np.random.random((10, 15)),
                  y_train=np.random.random(10),
@@ -102,7 +105,7 @@ class TabularPreprocessingTest(unittest.TestCase):
 class ImagePreprocessingTest(unittest.TestCase):
     def setUp(self):
         # Setup the backed for this test
-        self.backend = mock.Mock()
+        self.backend = mock.Mock(spec=Backend)
         dataset = mock.MagicMock()
         dataset.__len__.return_value = 1
         datamanager = mock.MagicMock()

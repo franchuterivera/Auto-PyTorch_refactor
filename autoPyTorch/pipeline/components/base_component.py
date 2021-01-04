@@ -231,11 +231,15 @@ class autoPyTorchComponent(BaseEstimator):
         for requirement in self._fit_requirements:
             check_dict = X['dataset_properties'] if requirement.dataset_property else X
             if requirement.name not in check_dict.keys():
-                raise ValueError(
-                    "To fit {}, expected fit dictionary to have '{}'"
-                    " but got \n {}".format(
-                        self.__class__.__name__,
-                        requirement.name, list(check_dict.keys())))
+                if requirement.name in ['X_train', 'backend']:
+                    if 'X_train' in check_dict.keys() or 'backend' in check_dict.keys():
+                        continue
+                else:
+                    raise ValueError(
+                        "To fit {}, expected fit dictionary to have '{}'"
+                        " but got \n {}".format(
+                            self.__class__.__name__,
+                            requirement.name, list(check_dict.keys())))
             else:
                 TYPE_SUPPORTED = isinstance(check_dict[requirement.name], tuple(requirement.supported_types))
                 if not TYPE_SUPPORTED:
