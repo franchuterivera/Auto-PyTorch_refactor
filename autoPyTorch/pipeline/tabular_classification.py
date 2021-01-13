@@ -5,6 +5,7 @@ from ConfigSpace.configuration_space import Configuration, ConfigurationSpace
 
 import numpy as np
 
+import sklearn.preprocessing
 from sklearn.base import ClassifierMixin
 
 from autoPyTorch.pipeline.base_pipeline import BasePipeline
@@ -132,7 +133,7 @@ class TabularClassificationPipeline(ClassifierMixin, BasePipeline):
             np.ndarray: Probabilities of the target being certain class
         """
         if batch_size is None:
-            return self._predict_proba(X)
+            y = self._predict_proba(X)
 
         else:
             if not isinstance(batch_size, int):
@@ -155,7 +156,12 @@ class TabularClassificationPipeline(ClassifierMixin, BasePipeline):
                     pred_prob = self.predict_proba(X[batch_from:batch_to], batch_size=None)
                     y[batch_from:batch_to] = pred_prob.astype(np.float32)
 
-                return y
+        # Neural networks might not be fit to produce a [0-1] output
+        # For instance, after small number of epochs.
+        y = np.clip(y, 0, 1)
+        y = sklearn.preprocessing.normalize(y, axis=1, norm='l1')
+
+        return y
 
     def _get_hyperparameter_search_space(
             self,

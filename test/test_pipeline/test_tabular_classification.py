@@ -2,6 +2,8 @@ import numpy as np
 
 import pytest
 
+import torch
+
 from autoPyTorch.pipeline.components.setup.early_preprocessor.utils import get_preprocess_transforms
 from autoPyTorch.pipeline.tabular_classification import TabularClassificationPipeline
 from autoPyTorch.utils.common import FitRequirement
@@ -31,6 +33,9 @@ class TestTabularClassification:
         assert run_summary.performance_tracker['train_loss'][1] > 0
         assert run_summary.total_parameter_count > 0
         assert 'accuracy' in run_summary.performance_tracker['train_metrics'][1]
+
+        # Make sure a network was fit
+        assert isinstance(pipeline.named_steps['network'].choice.get_network(), torch.nn.Module)
 
     def test_pipeline_predict(self, fit_dictionary):
         """This test makes sure that the pipeline is able to fit

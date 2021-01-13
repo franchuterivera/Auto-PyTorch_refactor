@@ -8,6 +8,7 @@ from autoPyTorch.constants import (
 from autoPyTorch.datasets.base_dataset import BaseDataset
 from autoPyTorch.datasets.tabular_dataset import TabularDataset
 from autoPyTorch.pipeline.tabular_classification import TabularClassificationPipeline
+from autoPyTorch.utils.backend import Backend
 
 
 class TabularClassificationTask(BaseTask):
@@ -50,6 +51,7 @@ class TabularClassificationTask(BaseTask):
         delete_output_folder_after_terminate: bool = True,
         include_components: Optional[Dict] = None,
         exclude_components: Optional[Dict] = None,
+        backend: Optional[Backend] = None,
     ):
         super().__init__(
             seed=seed,
@@ -63,7 +65,8 @@ class TabularClassificationTask(BaseTask):
             delete_tmp_folder_after_terminate=delete_tmp_folder_after_terminate,
             delete_output_folder_after_terminate=delete_output_folder_after_terminate,
             include_components=include_components,
-            exclude_components=exclude_components
+            exclude_components=exclude_components,
+            backend=backend,
         )
         self.task_type = TASK_TYPES_TO_STRING[TABULAR_CLASSIFICATION]
 

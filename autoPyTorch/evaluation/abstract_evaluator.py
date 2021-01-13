@@ -258,6 +258,10 @@ class AbstractEvaluator(object):
         self.budget = pipeline_config[self.budget_type] if budget == 0 else budget
         self.fit_dictionary = {**pipeline_config, **self.fit_dictionary}
 
+        # If the budget is epochs, we want to limit that in the fit dictionary
+        if self.budget_type == 'epochs':
+            self.fit_dictionary['epochs'] = budget
+
         self.num_run = 0 if num_run is None else num_run
 
         logger_name = '%s(%d)' % (self.__class__.__name__.split('.')[-1],
