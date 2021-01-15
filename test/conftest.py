@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 import time
 
@@ -14,14 +15,18 @@ from autoPyTorch.utils.backend import create
 from autoPyTorch.utils.pipeline import get_dataset_requirements
 
 
+def slugify(text):
+    return re.sub(r'[\[\]]+', '-', text.lower())
+
+
 @pytest.fixture(scope="function")
 def backend(request):
 
     test_dir = os.path.dirname(__file__)
-    tmp = os.path.join(test_dir, '.tmp__%s__%s' % (request.module.__name__, request.node.name))
-    output = os.path.join(
-        test_dir, '.output__%s__%s' % (request.module.__name__, request.node.name)
-    )
+    tmp = slugify(os.path.join(
+        test_dir, '.tmp__%s__%s' % (request.module.__name__, request.node.name)))
+    output = slugify(os.path.join(
+        test_dir, '.output__%s__%s' % (request.module.__name__, request.node.name)))
 
     for dir in (tmp, output):
         for i in range(10):

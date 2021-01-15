@@ -81,6 +81,7 @@ class TabularDataset(BaseDataset):
                  seed: Optional[int] = 42,
                  train_transforms: Optional[torchvision.transforms.Compose] = None,
                  val_transforms: Optional[torchvision.transforms.Compose] = None,
+                 dataset_name: Optional[str] = None,
                  ):
 
         X, self.data_types, self.nan_mask, self.itovs, self.vtois = self.interpret_columns(X)
@@ -117,6 +118,7 @@ class TabularDataset(BaseDataset):
                          resampling_strategy=resampling_strategy,
                          resampling_strategy_args=resampling_strategy_args,
                          seed=seed, train_transforms=train_transforms,
+                         dataset_name=dataset_name,
                          val_transforms=val_transforms)
         if self.output_type is not None:
             if STRING_TO_OUTPUT_TYPES[self.output_type] in CLASSIFICATION_OUTPUTS:

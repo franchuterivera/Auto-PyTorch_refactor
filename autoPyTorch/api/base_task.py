@@ -3,6 +3,7 @@ import json
 import logging.handlers
 import multiprocessing
 import os
+import sys
 import tempfile
 import time
 import typing
@@ -19,10 +20,6 @@ import joblib
 import numpy as np
 
 import pandas as pd
-
-import sklearn
-from sklearn.dummy import DummyClassifier, DummyRegressor
-from sklearn.utils.validation import check_is_fitted
 
 from smac.runhistory.runhistory import RunHistory
 
@@ -70,17 +67,16 @@ def _pipeline_predict(pipeline: BasePipeline,
         if task in REGRESSION_TASKS:
             prediction = pipeline.predict(X_, batch_size=batch_size)
         else:
-            prediction = pipeline.predict_proba(X_, batch_size=batch_size)
+            # Voting classifier predict proba does not support batch size
+            prediction = pipeline.predict_proba(X_)
             # Check that all probability values lie between 0 and 1.
-            if (
-                    (prediction >= 0).all() and (prediction <= 1).all()
-            ):
-                logger.debug(
-                    'proba predictions: {}, predictions:{}'.format(
-                        prediction, pipeline.predict(X_, batch_size=batch_size)))
-                raise ValueError("For {}, prediction probability not within [0, 1]!".format(
-                    pipeline)
-                )
+            if not ((prediction >= 0).all() and (prediction <= 1).all()):
+                np.set_printoptions(threshold=sys.maxsize)
+                raise ValueError("For {}, prediction probability not within [0, 1]: {}/{}!".format(
+                    pipeline,
+                    prediction,
+                    np.sum(prediction, axis=1)
+                ))
 
     if len(prediction.shape) < 1 or len(X_.shape) < 1 or \
             X_.shape[0] < 1 or prediction.shape[0] != X_.shape[0]:
@@ -173,6 +169,8 @@ class BaseTask:
 
         # Store the resampling strategy from the dataset, to load models as needed
         self.resampling_strategy = None  # type: Optional[Union[CrossValTypes, HoldoutValTypes]]
+
+        self.stop_logging_server = None  # type: Optional[multiprocessing.synchronize.Event]
 
     @abstractmethod
     def _get_required_dataset_properties(self, dataset: BaseDataset) -> Dict[str, Any]:
@@ -552,9 +550,10 @@ class BaseTask:
 
         # Initialise information needed for the experiment
         experiment_task_name = 'runSearch'
-        self._dataset_requirements = get_dataset_requirements(
+        dataset_requirements = get_dataset_requirements(
             info=self._get_required_dataset_properties(dataset))
-        dataset_properties = dataset.get_dataset_properties(self._dataset_requirements)
+        self._dataset_requirements = dataset_requirements
+        dataset_properties = dataset.get_dataset_properties(dataset_requirements)
         self._stopwatch.start_task(experiment_task_name)
         self.dataset_name = dataset.dataset_name
         self.resampling_strategy = dataset.resampling_strategy
@@ -849,24 +848,10 @@ class BaseTask:
         assert self.ensemble_ is not None, "Load models should error out if no ensemble"
         self.ensemble_ = cast(Union[SingleBest, EnsembleSelection], self.ensemble_)
 
-        try:
-            for i, tmp_model in enumerate(self.models_.values()):
-                if isinstance(tmp_model, (DummyRegressor, DummyClassifier)):
-                    check_is_fitted(tmp_model)
-                else:
-                    check_is_fitted(tmp_model.steps[-1][-1])
+        if isinstance(self.resampling_strategy, HoldoutValTypes):
             models = self.models_
-        except sklearn.exceptions.NotFittedError:
-            # When training a cross validation model, self.cv_models_
-            # will contain the Voting classifier/regressor product of cv
-            # self.models_ in the case of cv, contains unfitted models
-            # Raising above exception is a mechanism to detect which
-            # attribute contains the relevant models for prediction
-            try:
-                check_is_fitted(list(self.cv_models_.values())[0])
-                models = self.cv_models_
-            except sklearn.exceptions.NotFittedError:
-                raise ValueError('Found no fitted models!')
+        elif isinstance(self.resampling_strategy, CrossValTypes):
+            models = self.cv_models_
 
         all_predictions = joblib.Parallel(n_jobs=n_jobs)(
             joblib.delayed(_pipeline_predict)(
@@ -926,6 +911,24 @@ class BaseTask:
         return calculate_score(target=y_test, prediction=y_pred,
                                task_type=STRING_TO_TASK_TYPES[self.task_type],
                                metrics=[self._metric])
+
+    def __getstate__(self) -> Dict[str, Any]:
+        # Cannot serialize a client!
+        self._dask_client = None
+        self.logging_server = None
+        self.stop_logging_server = None
+        return self.__dict__
+
+    def __del__(self) -> None:
+        # Clean up the logger
+        self._clean_logger()
+
+        self._close_dask_client()
+
+        # When a multiprocessing work is done, the
+        # objects are deleted. We don't want to delete run areas
+        # until the estimator is deleted
+        self._backend.context.delete_directories(force=False)
 
     @typing.no_type_check
     def get_incumbent_results(

@@ -8,8 +8,7 @@ import ConfigSpace
 import dask.distributed
 
 from smac.facade.smac_ac_facade import SMAC4AC
-from smac.intensification.intensification import Intensifier
-from smac.intensification.simple_intensifier import SimpleIntensifier
+from smac.intensification.hyperband import Hyperband
 from smac.runhistory.runhistory import RunHistory
 from smac.runhistory.runhistory2epm import RunHistory2EPM4LogCost
 from smac.scenario.scenario import Scenario
@@ -38,6 +37,8 @@ def get_smac_object(
     ta: typing.Callable,
     ta_kwargs: typing.Dict[str, typing.Any],
     n_jobs: int,
+    initial_budget: int,
+    max_budget: int,
     dask_client: typing.Optional[dask.distributed.Client],
 ) -> SMAC4AC:
     """
@@ -57,10 +58,7 @@ def get_smac_object(
         (SMAC4AC): sequential model algorithm configuration object
 
     """
-    if len(scenario_dict['instances']) > 1:
-        intensifier = Intensifier
-    else:
-        intensifier = SimpleIntensifier
+    intensifier = Hyperband
 
     rh2EPM = RunHistory2EPM4LogCost
     return SMAC4AC(
@@ -72,6 +70,8 @@ def get_smac_object(
         initial_configurations=None,
         run_id=seed,
         intensifier=intensifier,
+        intensifier_kwargs={'initial_budget': initial_budget, 'max_budget': max_budget,
+                            'eta': 3, 'min_chall': 1, 'instance_order': 'shuffle_once'},
         dask_client=dask_client,
         n_jobs=n_jobs,
     )
@@ -90,7 +90,7 @@ class AutoMLSMBO(object):
                  watcher: StopWatch,
                  n_jobs: int,
                  dask_client: typing.Optional[dask.distributed.Client],
-                 pipeline_config: typing.Optional[typing.Dict[str, typing.Any]] = None,
+                 pipeline_config: typing.Dict[str, typing.Any],
                  start_num_run: int = 1,
                  seed: int = 1,
                  resampling_strategy: typing.Union[HoldoutValTypes, CrossValTypes] = HoldoutValTypes.holdout_validation,
@@ -207,12 +207,9 @@ class AutoMLSMBO(object):
     def reset_data_manager(self) -> None:
         if self.datamanager is not None:
             del self.datamanager
-        if isinstance(self.dataset_name, BaseDataset):
-            self.datamanager = self.dataset_name
-        else:
-            self.datamanager = self.backend.load_datamanager()
+        self.datamanager = self.backend.load_datamanager()
 
-        if self.datamanager.task_type is not None:
+        if self.datamanager is not None and self.datamanager.task_type is not None:
             self.task = self.datamanager.task_type
 
     def run_smbo(self, func: typing.Optional[typing.Callable] = None
@@ -305,12 +302,17 @@ class AutoMLSMBO(object):
                     )
             scenario_dict.update(self.smac_scenario_args)
 
+        initial_budget = self.pipeline_config['min_epochs']
+        max_budget = self.pipeline_config['epochs']
+
         if self.get_smac_object_callback is not None:
             smac = self.get_smac_object_callback(scenario_dict=scenario_dict,
                                                  seed=seed,
                                                  ta=ta,
                                                  ta_kwargs=ta_kwargs,
                                                  n_jobs=self.n_jobs,
+                                                 initial_budget=initial_budget,
+                                                 max_budget=max_budget,
                                                  dask_client=self.dask_client)
         else:
             smac = get_smac_object(scenario_dict=scenario_dict,
@@ -318,6 +320,8 @@ class AutoMLSMBO(object):
                                    ta=ta,
                                    ta_kwargs=ta_kwargs,
                                    n_jobs=self.n_jobs,
+                                   initial_budget=initial_budget,
+                                   max_budget=max_budget,
                                    dask_client=self.dask_client)
 
         if self.ensemble_callback is not None:
